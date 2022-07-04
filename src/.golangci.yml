@@ -1,0 +1,178 @@
+linters:
+  enable-all: true
+  disable: 
+    - depguard
+    - dupl
+    - godot
+    - contextcheck
+    - exhaustive
+    - exhaustivestruct 
+    - exhaustruct
+    - funlen
+    - forbidigo
+    - gochecknoglobals 
+    - godox 
+    - goerr113 
+    - gofmt 
+    - goimports
+    - golint # deprecated 
+    - gomnd
+    - gomoddirectives 
+    - importas 
+    - ireturn
+    - lll
+    - maligned 
+    - misspell 
+    - nlreturn 
+    - nilnil 
+    - paralleltest 
+    - prealloc
+    - scopelint 
+    - stylecheck # using revive instead
+    - tagliatelle
+    - testpackage 
+    - varnamelen
+    - wrapcheck 
+    - wsl 
+    - nonamedreturns
+    - execinquery
+
+issues:
+  exclude-rules:
+    # Exclude some linters from running on tests files.
+    - path: /.*_test\.go|/.*testhelper\.go|/.*test_.*\.go|testutil/
+      linters:
+        - gocyclo
+        - dupl
+        - gomnd
+        - funlen
+        - gocognit
+        - maintidx
+        - cyclop
+        - errcheck
+        - exhaustruct
+        - containedctx
+  exclude:  
+    - don't use an underscore in package name
+    - "importShadow: shadow of imported from 'github.com/stretchr/testify/suite' package 'suite'"
+  fix: false
+  max-same-issues: 0
+  max-issues-per-linter: 0
+
+run:
+  deadline: 10m
+  issues-exit-code: 1
+  tests: true
+  allow-parallel-runners: true
+  new: false
+
+linters-settings:
+  ifshort:
+    # Maximum length of variable declaration measured in number 
+    # of characters, after which linter won't suggest using short syntax.
+    max-decl-chars: 45
+
+  gocyclo:
+    min-complexity: 15
+
+  cyclop:
+    max-complexity: 15
+    skip-tests: true
+
+  gocognit:
+    min-complexity: 13
+
+  gocritic:
+    enabled-tags:
+      - diagnostic
+      - style # things like commented code, and useless fallthrough
+      - performance
+      - opinionated
+      - experimental
+    disabled-checks:
+      - commentedOutCode
+      
+  gofumpt:
+    lang-version: "1.18"
+    extra-rules: true
+
+  gci:
+    sections:
+      - standard # Captures all standard packages if they do not match another section.
+      - default # Contains all imports that could not be matched to another section type.
+      - prefix(6.824)
+
+  gosimple:
+    go: "1.18"
+    # https://staticcheck.io/docs/options#checks
+    checks: [ "all" ]
+
+  govet:
+    disable:
+      - fieldalignment
+
+  revive:
+    ignore-generated-header: true
+    enable-all-rules: true
+    # https://github.com/mgechev/revive/blob/master/RULES_DESCRIPTIONS.md
+    rules:
+      - name: add-constant 
+        disabled: true
+      - name: argument-limit
+        disabled: true
+      - name: banned-characters 
+        disabled: true
+      # gocognit is better
+      - name: cognitive-complexity 
+        disabled: true
+      - name: cyclomatic
+        disabled: true
+      - name: defer
+        arguments:
+          - ["call-chain", "loop", "method-call", "recover", "return"]
+      - name: exported
+        disabled: true
+      - name: file-header
+        disabled: true
+      - name: function-result-limit
+        arguments: [5]
+      # go critic is better for detecting shadow - like less false positives 
+      - name: import-shadowing 
+        disabled: true
+      - name: line-length-limit
+        disabled: true
+      - name: max-public-structs 
+        disabled: true
+      - name: package-comments 
+        disabled: true
+      - name: struct-tag # n/a
+        disabled: true
+      - name: unexported-return # too restrictive
+        disabled: true
+      - name: unhandled-error
+        arguments:
+          - "fmt.Printf"
+
+  staticcheck:
+    go: "1.18"
+    # https://staticcheck.io/docs/options#checks
+    checks: [ "all" ]
+
+  unused:
+    go: "1.18"
+
+  grouper:
+    const-require-single-const: true
+    const-require-grouping: true
+    import-require-single-import: true
+    import-require-grouping: true
+    # type-require-single-type: true
+    # type-require-grouping: true
+    # var-require-single-var: true
+    # var-require-grouping: true
+
+
+  gosec:
+    config:
+      G101: # TScan for hardcoded credentials. 
+        truncate: "32" 
