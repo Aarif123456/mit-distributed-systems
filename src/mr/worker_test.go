@@ -126,7 +126,7 @@ func Test_Worker(t *testing.T) {
             })
             for i := range want {
                 if want[i] != got[i] {
-                    t.Fatalf("i: %d, want: %v, got: %v\n", i, want, got)
+                    t.Fatalf("i: %d, want: %v, got: %v\n", i, want[i], got[i])
                 }
             }
         })
