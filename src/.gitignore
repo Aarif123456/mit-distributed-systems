@@ -13,3 +13,4 @@ mrtmp.*
 # output files for ma reduce are mr-out-*, intermediate files are mr-X-Y, 
 # where X is the Map task number, and Y is the reduce task number. 
 main/mr-*-*
+mr/mr-*-*
