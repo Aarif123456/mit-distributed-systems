@@ -166,10 +166,12 @@ func runReduce(reply *ReduceReply, reducef ReduceFunc) error {
 	})
 
 	outName := getReduceOutFile(reply.ReduceTaskID)
-	outFile, err := os.Create(outName)
+	tmpOutFile, err := os.CreateTemp("", outName)
 	if err != nil {
 		return err
 	}
+	tmpFileName := tmpOutFile.Name()
+	defer os.Remove(tmpFileName) // clean up
 
 	// call Reduce on each distinct key in kva[],
 	// and print the result to the output file.
@@ -187,9 +189,17 @@ func runReduce(reply *ReduceReply, reducef ReduceFunc) error {
 
 		output := reducef(kva[slow].Key, values)
 
-		fmt.Fprintf(outFile, "%v %v\n", kva[slow].Key, output)
+		fmt.Fprintf(tmpOutFile, "%v %v\n", kva[slow].Key, output)
 
 		slow = fast
+	}
+
+	if err := tmpOutFile.Close(); err != nil {
+		return err
+	}
+
+	if err := os.Rename(tmpFileName, outFile); err != nil {
+		return err
 	}
 
 	DoneReduceCall(&DoneReduceArgs{reply.ReduceTaskID})
