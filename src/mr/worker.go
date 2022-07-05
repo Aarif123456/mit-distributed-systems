@@ -13,7 +13,7 @@ import (
 )
 
 type (
-	MapFunc    func(string, string) []KeyValue
+	MapFunc    func(fileName, content string) []KeyValue
 	ReduceFunc func(string, []string) string
 	// Map functions return a slice of KeyValue.
 	KeyValue struct {
@@ -58,38 +58,33 @@ func IdleCall() *IdleReply {
 
 func runMap(reply *MapReply, mapf MapFunc) {
 	content := readFile(reply.InFile)
-
-	// run map function
-	kva := mapf(reply.InFile, string(content))
-
+	kva := mapf(reply.InFile, content)
 	outWriter := getFileWriters(reply.MapTaskID, reply.NumReduceTask)
-
 	saveToDisk(kva, outWriter)
-
 	DoneMapCall(&DoneMapArgs{reply.MapTaskID})
 }
 
-func readFile(filename string) []byte {
+func readFile(fileName string) string {
 	// open file
-	file, err := os.Open(filename)
+	file, err := os.Open(fileName)
 	if err != nil {
-		log.Fatalf("cannot open %v", filename)
+		log.Fatalf("cannot open %v", fileName)
 	}
 	defer file.Close()
 
 	// read from file
 	content, err := io.ReadAll(file)
 	if err != nil {
-		log.Fatalf("cannot read %v", filename)
+		log.Fatalf("cannot read %v", fileName)
 	}
 
-	return content
+	return string(content)
 }
 
 func getFileWriters(mapTaskID, numReduceTask int) []*json.Encoder {
 	outWriter := make([]*json.Encoder, 0, numReduceTask)
-	for nReduceTask := 0; nReduceTask < numReduceTask; nReduceTask++ {
-		outName := getMapOutFile(mapTaskID, nReduceTask)
+	for rt := 0; rt < numReduceTask; rt++ {
+		outName := getMapOutFile(mapTaskID, rt)
 		outFile, _ := os.Create(outName)
 		outWriter = append(outWriter, json.NewEncoder(outFile))
 	}
@@ -154,12 +149,10 @@ func runReduce(reply *ReduceReply, reducef ReduceFunc) {
 		}
 
 		var values []string
-		for ; slow < fast; slow++ {
-			values = append(values, kva[slow].Value)
+		for k := slow; k < fast; k++ {
+			values = append(values, kva[k].Value)
 		}
-		if slow == fast {
-			panic("slow was not supposed to catch up")
-		}
+
 		output := reducef(kva[slow].Key, values)
 
 		fmt.Fprintf(outFile, "%v %v\n", kva[slow].Key, output)
@@ -173,12 +166,12 @@ func runReduce(reply *ReduceReply, reducef ReduceFunc) {
 func readReduceData(reduceTaskID, numMapTask int) []KeyValue {
 	var kva []KeyValue
 
-	for nMapTask := 0; nMapTask < numMapTask; nMapTask++ {
-		filename := getMapOutFile(nMapTask, reduceTaskID)
+	for mt := 0; mt < numMapTask; mt++ {
+		fileName := getMapOutFile(mt, reduceTaskID)
 		// open file
-		file, err := os.Open(filename)
+		file, err := os.Open(fileName)
 		if err != nil {
-			log.Fatalf("cannot open %v", filename)
+			log.Fatalf("cannot open %v", fileName)
 		}
 		defer file.Close()
 
