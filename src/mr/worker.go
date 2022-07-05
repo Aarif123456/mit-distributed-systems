@@ -31,17 +31,24 @@ func Worker(mapf MapFunc, reducef ReduceFunc) {
 		case RunMap:
 			reply, err := MapCall()
 			if err != nil {
-				log.Printf("Map Err %s\n", err)
+				log.Printf("Map call error: %s\n", err)
 				continue
 			}
-			runMap(reply, mapf)
+			if err := runMap(reply, mapf); err != nil {
+				log.Printf("Map run error: %s\n", err)
+				continue
+			}
 		case RunReduce:
 			reply, err := ReduceCall()
 			if err != nil {
-				log.Printf("Reduce Err %s\n", err)
+				log.Printf("Reduce call error: %s\n", err)
 				continue
 			}
-			runReduce(reply, reducef)
+
+			if err := runReduce(reply, reducef); err != nil {
+				log.Printf("Reduce run error: %s\n", err)
+				continue
+			}
 		}
 	}
 }
@@ -56,50 +63,69 @@ func IdleCall() *IdleReply {
 	return reply
 }
 
-func runMap(reply *MapReply, mapf MapFunc) {
-	content := readFile(reply.InFile)
+func runMap(reply *MapReply, mapf MapFunc) error {
+	content, err := readFile(reply.InFile)
+	if err != nil {
+		return err
+	}
+
 	kva := mapf(reply.InFile, content)
-	outWriter := getFileWriters(reply.MapTaskID, reply.NumReduceTask)
-	saveToDisk(kva, outWriter)
+
+	outWriter, err := getFileWriters(reply.MapTaskID, reply.NumReduceTask)
+	if err != nil {
+		return err
+	}
+
+	if err := saveToDisk(kva, outWriter); err != nil {
+		return err
+	}
+
 	DoneMapCall(&DoneMapArgs{reply.MapTaskID})
+	return nil
 }
 
-func readFile(fileName string) string {
+func readFile(fileName string) (string, error) {
 	// open file
 	file, err := os.Open(fileName)
 	if err != nil {
-		log.Fatalf("cannot open %v", fileName)
+		return "", fmt.Errorf("cannot open %s", fileName)
+
 	}
 	defer file.Close()
 
 	// read from file
 	content, err := io.ReadAll(file)
 	if err != nil {
-		log.Fatalf("cannot read %v", fileName)
+		return "", fmt.Errorf("cannot read %v", fileName)
 	}
 
-	return string(content)
+	return string(content), nil
 }
 
-func getFileWriters(mapTaskID, numReduceTask int) []*json.Encoder {
+func getFileWriters(mapTaskID, numReduceTask int) ([]*json.Encoder, error) {
 	outWriter := make([]*json.Encoder, 0, numReduceTask)
 	for rt := 0; rt < numReduceTask; rt++ {
 		outName := getMapOutFile(mapTaskID, rt)
-		outFile, _ := os.Create(outName)
+		outFile, err := os.Create(outName)
+		if err != nil {
+			return nil, fmt.Errorf("cannot get file writer: %w", err)
+		}
 		outWriter = append(outWriter, json.NewEncoder(outFile))
 	}
 
-	return outWriter
+	return outWriter, nil
 }
 
-func saveToDisk(kva []KeyValue, outWriter []*json.Encoder) {
+func saveToDisk(kva []KeyValue, outWriter []*json.Encoder) error {
 	n := len(outWriter)
 	for _, kv := range kva {
 		i := ihash(kv.Key) % n
 		if err := outWriter[i].Encode(&kv); err != nil {
-			log.Println(err)
+			return fmt.Errorf("cannot save: %w", err)
 		}
 	}
+
+	return nil
 }
 
 // use ihash(key) % NReduce to choose the reduce
@@ -129,15 +155,21 @@ func DoneMapCall(args *DoneMapArgs) {
 	call("Coordinator.DoneMap", args, reply)
 }
 
-func runReduce(reply *ReduceReply, reducef ReduceFunc) {
-	kva := readReduceData(reply.ReduceTaskID, reply.NumMapTask)
+func runReduce(reply *ReduceReply, reducef ReduceFunc) error {
+	kva, err := readReduceData(reply.ReduceTaskID, reply.NumMapTask)
+	if err != nil {
+		return err
+	}
 
 	sort.Slice(kva, func(i, j int) bool {
 		return kva[i].Key < kva[j].Key
 	})
 
 	outName := getReduceOutFile(reply.ReduceTaskID)
-	outFile, _ := os.Create(outName)
+	outFile, err := os.Create(outName)
+	if err != nil {
+		return err
+	}
 
 	// call Reduce on each distinct key in kva[],
 	// and print the result to the output file.
@@ -161,9 +193,10 @@ func runReduce(reply *ReduceReply, reducef ReduceFunc) {
 	}
 
 	DoneReduceCall(&DoneReduceArgs{reply.ReduceTaskID})
+	return nil
 }
 
-func readReduceData(reduceTaskID, numMapTask int) []KeyValue {
+func readReduceData(reduceTaskID, numMapTask int) ([]KeyValue, error) {
 	var kva []KeyValue
 
 	for mt := 0; mt < numMapTask; mt++ {
@@ -171,21 +204,21 @@ func readReduceData(reduceTaskID, numMapTask int) []KeyValue {
 		// open file
 		file, err := os.Open(fileName)
 		if err != nil {
-			log.Fatalf("cannot open %v", fileName)
+			return nil, fmt.Errorf("cannot open %s", fileName)
 		}
 		defer file.Close()
 
 		dec := json.NewDecoder(file)
-		for {
+		for dec.More() {
 			var kv KeyValue
 			if err := dec.Decode(&kv); err != nil {
-				break
+				return nil, fmt.Errorf("cannot decode %w", err)
 			}
 			kva = append(kva, kv)
 		}
 	}
 
-	return kva
+	return kva, nil
 }
 
 func ReduceCall() (*ReduceReply, error) {

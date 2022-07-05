@@ -109,14 +109,18 @@ func Test_Worker(t *testing.T) {
         tc := tc
         t.Run(tc.name, func(t *testing.T) {
             for _, reply := range tc.mapInput {
-                runMap(reply, tc.mapf)
+                if err := runMap(reply, tc.mapf); err != nil {
+                    t.Fatalf("Expected no error: %s", err)
+                }
             }
             for _, reply := range tc.reduceInput {
-                runReduce(reply, tc.reducef)
+                if err := runReduce(reply, tc.reducef); err != nil {
+                    t.Fatalf("Expected no error: %s", err)
+                }
             }
 
             numReduceTask := len(tc.reduceInput)
-            got := getOutput(numReduceTask)
+            got := getOutput(t, numReduceTask)
             want := tc.want
             sort.Slice(want, func(i, j int) bool {
                 return want[i].Key < want[j].Key
@@ -133,11 +137,18 @@ func Test_Worker(t *testing.T) {
     }
 }
 
-func getOutput(numReduceTask int) []Output {
+func getOutput(t *testing.T, numReduceTask int) []Output {
+    t.Helper()
+
     var out []Output
     for rt := 0; rt < numReduceTask; rt++ {
         fileName := getReduceOutFile(rt)
-        lines := strings.Split(readFile(fileName), "\n")
+        content, err := readFile(fileName)
+        if err != nil {
+            t.Fatalf("Expected no error: %s", err)
+        }
+
+        lines := strings.Split(content, "\n")
         for _, line := range lines {
             if strings.Trim(line, "") == "" {
                 continue
