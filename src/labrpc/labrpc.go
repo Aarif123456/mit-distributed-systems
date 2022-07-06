@@ -152,10 +152,10 @@ type Network struct {
 func MakeNetwork() *Network {
 	rn := &Network{
 		reliable:    true,
-		ends:        map[interface{}]*ClientEnd{},
-		enabled:     map[interface{}]bool{},
-		servers:     map[interface{}]*Server{},
-		connections: map[interface{}](interface{}){},
+		ends:        make(map[interface{}]*ClientEnd),
+		enabled:     make(map[interface{}]bool),
+		servers:     make(map[interface{}]*Server),
+		connections: make(map[interface{}](interface{})),
 		endCh:       make(chan reqMsg),
 		done:        make(chan struct{}),
 	}

@@ -34,7 +34,7 @@ func check(t *testing.T, groups []int, ck *Clerk) {
 	}
 
 	// more or less balanced sharding?
-	counts := map[int]int{}
+	counts := make(map[int]int)
 	for _, g := range c.Shards {
 		counts[g] += 1
 	}

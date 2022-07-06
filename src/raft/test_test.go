@@ -9,7 +9,6 @@ package raft
 //
 
 import (
-	"fmt"
 	"math/rand"
 	"sync"
 	"sync/atomic"
@@ -43,7 +42,7 @@ func TestInitialElection2A(t *testing.T) {
 	time.Sleep(2 * RaftElectionTimeout)
 	term2 := cfg.checkTerms()
 	if term1 != term2 {
-		fmt.Printf("warning: term changed even though there were no failures")
+		t.Log("warning: term changed even though there were no failures")
 	}
 
 	// there should still be a leader.
@@ -137,7 +136,7 @@ func TestBasicAgree2B(t *testing.T) {
 
 		xindex := cfg.one(index*100, servers, false)
 		if xindex != index {
-			t.Fatalf("got index %v but expected %v", xindex, index)
+			t.Fatalf("got index %v but want %v", xindex, index)
 		}
 	}
 
@@ -164,16 +163,16 @@ func TestRPCBytes2B(t *testing.T) {
 		cmd := randstring(5000)
 		xindex := cfg.one(cmd, servers, false)
 		if xindex != index {
-			t.Fatalf("got index %v but expected %v", xindex, index)
+			t.Fatalf("got index %v but want %v", xindex, index)
 		}
 		sent += int64(len(cmd))
 	}
 
 	bytes1 := cfg.bytesTotal()
 	got := bytes1 - bytes0
-	expected := int64(servers) * sent
-	if got > expected+50000 {
-		t.Fatalf("too many RPC bytes; got %v, expected %v", got, expected)
+	want := int64(servers) * sent
+	if got > want+50000 {
+		t.Fatalf("too many RPC bytes; got %v, want %v", got, want)
 	}
 
 	cfg.end()
@@ -233,7 +232,7 @@ func TestFailNoAgree2B(t *testing.T) {
 		t.Fatalf("leader rejected Start()")
 	}
 	if index != 2 {
-		t.Fatalf("expected index 2, got %v", index)
+		t.Fatalf("want index 2, got %v", index)
 	}
 
 	time.Sleep(2 * RaftElectionTimeout)
@@ -540,7 +539,7 @@ loop:
 					// term changed -- try again
 					continue loop
 				}
-				t.Fatalf("wrong value %v committed for index %v; expected %v\n", cmd, starti+i, cmds)
+				t.Fatalf("wrong value %v committed for index %v; want %v\n", cmd, starti+i, cmds)
 			}
 		}
 
@@ -858,7 +857,6 @@ func TestFigure8Unreliable2C(t *testing.T) {
 }
 
 func internalChurn(t *testing.T, unreliable bool) {
-
 	servers := 5
 	cfg := makeConfig(t, servers, unreliable, false)
 	defer cfg.cleanup()
@@ -1016,7 +1014,7 @@ func TestUnreliableChurn2C(t *testing.T) {
 
 const MAXLOGSIZE = 2000
 
-func snapcommon(t *testing.T, name string, disconnect bool, reliable bool, crash bool) {
+func snapcommon(t *testing.T, name string, disconnect, reliable, crash bool) {
 	iters := 30
 	servers := 3
 	cfg := makeConfig(t, servers, !reliable, true)
