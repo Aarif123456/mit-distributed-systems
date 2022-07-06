@@ -267,7 +267,7 @@ func getReduceOutFile(reduceTaskNum int) string {
 
 // call sends an RPC request to the coordinator, waits for the response.
 // and returns true if nothing went wrong.
-func call(rpcName string, args interface{}, reply interface{}) error {
+func call(rpcName string, args any, reply any) error {
 	// c, err := rpc.DialHTTP("tcp", "127.0.0.1"+":1234")
 	sockName := coordinatorSock()
 	c, err := rpc.DialHTTP("unix", sockName)

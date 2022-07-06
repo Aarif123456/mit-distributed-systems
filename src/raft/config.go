@@ -36,9 +36,9 @@ type config struct {
 	applyErr  []string // from apply channel readers
 	connected []bool   // whether each server is on the net
 	saved     []*Persister
-	endnames  [][]string            // the port file names each sends to
-	logs      []map[int]interface{} // copy of each server's committed entries
-	start     time.Time             // time at which makeConfig() was called
+	endnames  [][]string    // the port file names each sends to
+	logs      []map[int]any // copy of each server's committed entries
+	start     time.Time     // time at which makeConfig() was called
 	// begin()/end() statistics
 	t0        time.Time // time at which test_test.go called cfg.begin()
 	rpcs0     int       // rpcTotal() at start of test
@@ -65,7 +65,7 @@ func makeConfig(t *testing.T, n int, unreliable bool, snapshot bool) *config {
 		connected: make([]bool, n),
 		saved:     make([]*Persister, n),
 		endnames:  make([][]string, n),
-		logs:      make([]map[int]interface{}, n),
+		logs:      make([]map[int]any, n),
 		start:     time.Now(),
 	}
 
@@ -79,7 +79,7 @@ func makeConfig(t *testing.T, n int, unreliable bool, snapshot bool) *config {
 	}
 	// create a full set of Rafts.
 	for i := 0; i < cfg.n; i++ {
-		cfg.logs[i] = make(map[int]interface{})
+		cfg.logs[i] = make(map[int]any)
 		cfg.start1(i, applier)
 	}
 
@@ -182,7 +182,7 @@ func (cfg *config) applierSnap(i int, applyCh <-chan ApplyMsg) {
 			cfg.mu.Lock()
 			if cfg.rafts[i].CondInstallSnapshot(m.SnapshotTerm,
 				m.SnapshotIndex, m.Snapshot) {
-				cfg.logs[i] = make(map[int]interface{})
+				cfg.logs[i] = make(map[int]any)
 				r := bytes.NewBuffer(m.Snapshot)
 				d := labgob.NewDecoder(r)
 				var v int
@@ -433,15 +433,15 @@ func (cfg *config) checkNoLeader() {
 }
 
 // how many servers think a log entry is committed?
-func (cfg *config) nCommitted(index int) (int, interface{}) {
+func (cfg *config) nCommitted(index int) (int, any) {
 	count := 0
-	var cmd interface{}
+	var cmd any
 	for i := 0; i < len(cfg.rafts); i++ {
 		if cfg.applyErr[i] != "" {
 			cfg.t.Fatal(cfg.applyErr[i])
 		}
 
-		cmd1, ok := func() (interface{}, bool) {
+		cmd1, ok := func() (any, bool) {
 			cfg.mu.Lock()
 			defer cfg.mu.Unlock()
 
@@ -465,7 +465,7 @@ func (cfg *config) nCommitted(index int) (int, interface{}) {
 
 // wait for at least n servers to commit.
 // but don't wait forever.
-func (cfg *config) wait(index int, n int, startTerm int) interface{} {
+func (cfg *config) wait(index int, n int, startTerm int) any {
 	to := 10 * time.Millisecond
 	for iters := 0; iters < 30; iters++ {
 		nd, _ := cfg.nCommitted(index)
@@ -506,7 +506,7 @@ func (cfg *config) wait(index int, n int, startTerm int) interface{} {
 // times, in case a leader fails just after Start().
 // if retry==false, calls Start() only once, in order
 // to simplify the early Lab 2B tests.
-func (cfg *config) one(cmd interface{}, expectedServers int, retry bool) int {
+func (cfg *config) one(cmd any, expectedServers int, retry bool) int {
 	t0 := time.Now()
 	starts := 0
 	for time.Since(t0).Seconds() < 10 {
