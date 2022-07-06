@@ -91,7 +91,7 @@ func checkType(t reflect.Type) {
 		for i := 0; i < t.NumField(); i++ {
 			f := t.Field(i)
 			rune, _ := utf8.DecodeRuneInString(f.Name)
-			if unicode.IsUpper(rune) == false {
+			if !unicode.IsUpper(rune) {
 				// ta da
 				fmt.Printf("labgob error: lower-case field %v of %v in RPC or persist/snapshot will break your Raft\n",
 					f.Name, t.Name())
@@ -158,7 +158,7 @@ func checkDefault1(value reflect.Value, depth int, name string) {
 		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
 		reflect.Uintptr, reflect.Float32, reflect.Float64,
 		reflect.String:
-		if reflect.DeepEqual(reflect.Zero(t).Interface(), value.Interface()) == false {
+		if !reflect.DeepEqual(reflect.Zero(t).Interface(), value.Interface()) {
 			mu.Lock()
 			if errorCount < 1 {
 				what := name

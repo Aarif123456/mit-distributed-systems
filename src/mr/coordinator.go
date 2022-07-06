@@ -14,6 +14,8 @@ type Coordinator struct {
 	reduceTm *taskManager[ReduceReply]
 }
 
+var errJobCancelled = errors.New("job cancelled")
+
 // MakeCoordinator creates a Coordinator.
 // main/mrcoordinator.go calls this function.
 // nReduce is the number of reduce tasks to use.
@@ -63,7 +65,7 @@ func (c *Coordinator) Idle(args *IdleArgs, reply *IdleReply) error {
 func (c *Coordinator) Map(args *MapArgs, reply *MapReply) error {
 	val, ok := c.mapTm.Run()
 	if !ok {
-		return errors.New("job cancelled")
+		return errJobCancelled
 	}
 
 	*reply = val
@@ -78,7 +80,7 @@ func (c *Coordinator) DoneMap(args *DoneMapArgs, reply *DoneMapReply) error {
 func (c *Coordinator) Reduce(args *ReduceArgs, reply *ReduceReply) error {
 	val, ok := c.reduceTm.Run()
 	if !ok {
-		return errors.New("job cancelled")
+		return errJobCancelled
 	}
 
 	*reply = val

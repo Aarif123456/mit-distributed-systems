@@ -165,40 +165,25 @@ func runReduce(reply *ReduceReply, reducef ReduceFunc) error {
 		return kva[i].Key < kva[j].Key
 	})
 
-	outName := getReduceOutFile(reply.ReduceTaskID)
-	tmpOutFile, err := os.CreateTemp("", outName)
+	// write to temp file first, in case something breaks
+	tmpOutFile, err := os.CreateTemp("", "*")
 	if err != nil {
 		return err
 	}
 	tmpFileName := tmpOutFile.Name()
-	defer os.Remove(tmpFileName) // clean up
+	// clean up in case something goes wrong
+	defer os.Remove(tmpFileName)
 
 	// call Reduce on each distinct key in kva[],
-	// and print the result to the output file.
-	slow := 0
-	for slow < len(kva) {
-		fast := slow + 1
-		for fast < len(kva) && kva[fast].Key == kva[slow].Key {
-			fast++
-		}
-
-		var values []string
-		for k := slow; k < fast; k++ {
-			values = append(values, kva[k].Value)
-		}
-
-		output := reducef(kva[slow].Key, values)
-
-		fmt.Fprintf(tmpOutFile, "%v %v\n", kva[slow].Key, output)
-
-		slow = fast
-	}
+	// and write the result to the output file.
+	applyAndSaveReduce(kva, tmpOutFile, reducef)
 
 	if err := tmpOutFile.Close(); err != nil {
 		return err
 	}
 
-	if err := os.Rename(tmpFileName, outFile); err != nil {
+	outName := getReduceOutFile(reply.ReduceTaskID)
+	if err := os.Rename(tmpFileName, outName); err != nil {
 		return err
 	}
 
@@ -229,6 +214,27 @@ func readReduceData(reduceTaskID, numMapTask int) ([]KeyValue, error) {
 	}
 
 	return kva, nil
+}
+
+func applyAndSaveReduce(kva []KeyValue, w io.Writer, reducef ReduceFunc) {
+	slow := 0
+	for slow < len(kva) {
+		fast := slow + 1
+		key := kva[slow].Key
+		for fast < len(kva) && kva[fast].Key == key {
+			fast++
+		}
+
+		var vals []string
+		for k := slow; k < fast; k++ {
+			vals = append(vals, kva[k].Value)
+		}
+
+		output := reducef(key, vals)
+		fmt.Fprintf(w, "%v %v\n", key, output)
+
+		slow = fast
+	}
 }
 
 func ReduceCall() (*ReduceReply, error) {

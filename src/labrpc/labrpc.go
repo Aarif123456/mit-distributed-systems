@@ -49,44 +49,55 @@ package labrpc
 //   pass svc to srv.AddService()
 //
 
-import "6.824/labgob"
-import "bytes"
-import "reflect"
-import "sync"
-import "log"
-import "strings"
-import "math/rand"
-import "time"
-import "sync/atomic"
+import (
+	"bytes"
+	"log"
+	"math/rand"
+	"reflect"
+	"strings"
+	"sync"
+	"sync/atomic"
+	"time"
 
-type reqMsg struct {
-	endname  interface{} // name of sending ClientEnd
-	svcMeth  string      // e.g. "Raft.AppendEntries"
-	argsType reflect.Type
-	args     []byte
-	replyCh  chan replyMsg
-}
+	"6.824/labgob"
+)
 
-type replyMsg struct {
-	ok    bool
-	reply []byte
-}
+const (
+	_longDelayCap  = 7000
+	_shortDelayCap = 100
+)
 
-type ClientEnd struct {
-	endname interface{}   // this end-point's name
-	ch      chan reqMsg   // copy of Network.endCh
-	done    chan struct{} // closed when Network is cleaned up
-}
+type (
+	ClientEnd struct {
+		endname interface{}   // this end-point's name
+		ch      chan reqMsg   // copy of Network.endCh
+		done    chan struct{} // closed when Network is cleaned up
+	}
+
+	reqMsg struct {
+		endname  interface{} // name of sending ClientEnd
+		svcMeth  string      // e.g. "Raft.AppendEntries"
+		argsType reflect.Type
+		args     []byte
+		replyCh  chan replyMsg
+	}
+
+	replyMsg struct {
+		ok    bool
+		reply []byte
+	}
+)
 
 // send an RPC, wait for the reply.
 // the return value indicates success; false means that
 // no reply was received from the server.
 func (e *ClientEnd) Call(svcMeth string, args interface{}, reply interface{}) bool {
-	req := reqMsg{}
-	req.endname = e.endname
-	req.svcMeth = svcMeth
-	req.argsType = reflect.TypeOf(args)
-	req.replyCh = make(chan replyMsg)
+	req := reqMsg{
+		endname:  e.endname,
+		svcMeth:  svcMeth,
+		argsType: reflect.TypeOf(args),
+		replyCh:  make(chan replyMsg),
+	}
 
 	qb := new(bytes.Buffer)
 	qe := labgob.NewEncoder(qb)
@@ -110,16 +121,17 @@ func (e *ClientEnd) Call(svcMeth string, args interface{}, reply interface{}) bo
 	// wait for the reply.
 	//
 	rep := <-req.replyCh
-	if rep.ok {
-		rb := bytes.NewBuffer(rep.reply)
-		rd := labgob.NewDecoder(rb)
-		if err := rd.Decode(reply); err != nil {
-			log.Fatalf("ClientEnd.Call(): decode reply: %v\n", err)
-		}
-		return true
-	} else {
+	if !rep.ok {
 		return false
 	}
+
+	rb := bytes.NewBuffer(rep.reply)
+	rd := labgob.NewDecoder(rb)
+	if err := rd.Decode(reply); err != nil {
+		log.Fatalf("ClientEnd.Call(): decode reply: %v\n", err)
+	}
+
+	return true
 }
 
 type Network struct {
@@ -138,14 +150,15 @@ type Network struct {
 }
 
 func MakeNetwork() *Network {
-	rn := &Network{}
-	rn.reliable = true
-	rn.ends = map[interface{}]*ClientEnd{}
-	rn.enabled = map[interface{}]bool{}
-	rn.servers = map[interface{}]*Server{}
-	rn.connections = map[interface{}](interface{}){}
-	rn.endCh = make(chan reqMsg)
-	rn.done = make(chan struct{})
+	rn := &Network{
+		reliable:    true,
+		ends:        map[interface{}]*ClientEnd{},
+		enabled:     map[interface{}]bool{},
+		servers:     map[interface{}]*Server{},
+		connections: map[interface{}](interface{}){},
+		endCh:       make(chan reqMsg),
+		done:        make(chan struct{}),
+	}
 
 	// single goroutine to handle all ClientEnd.Call()s
 	go func() {
@@ -209,23 +222,20 @@ func (rn *Network) isServerDead(endname interface{}, servername interface{}, ser
 	rn.mu.Lock()
 	defer rn.mu.Unlock()
 
-	if rn.enabled[endname] == false || rn.servers[servername] != server {
-		return true
-	}
-	return false
+	return !rn.enabled[endname] || rn.servers[servername] != server
 }
 
 func (rn *Network) processReq(req reqMsg) {
 	enabled, servername, server, reliable, longreordering := rn.readEndnameInfo(req.endname)
 
 	if enabled && servername != nil && server != nil {
-		if reliable == false {
+		if !reliable {
 			// short delay
 			ms := (rand.Int() % 27)
 			time.Sleep(time.Duration(ms) * time.Millisecond)
 		}
 
-		if reliable == false && (rand.Int()%1000) < 100 {
+		if !reliable && (rand.Int()%1000) < 100 {
 			// drop the request, return as if timeout
 			req.replyCh <- replyMsg{false, nil}
 			return
@@ -247,7 +257,7 @@ func (rn *Network) processReq(req reqMsg) {
 		var reply replyMsg
 		replyOK := false
 		serverDead := false
-		for replyOK == false && serverDead == false {
+		for !replyOK && !serverDead {
 			select {
 			case reply = <-ech:
 				replyOK = true
@@ -269,13 +279,14 @@ func (rn *Network) processReq(req reqMsg) {
 		// DeleteServer() before superseding the Persister.
 		serverDead = rn.isServerDead(req.endname, servername, server)
 
-		if replyOK == false || serverDead == true {
+		switch {
+		case !replyOK || serverDead:
 			// server was killed while we were waiting; return error.
 			req.replyCh <- replyMsg{false, nil}
-		} else if reliable == false && (rand.Int()%1000) < 100 {
+		case !reliable && (rand.Int()%1000) < 100:
 			// drop the reply, return as if timeout
 			req.replyCh <- replyMsg{false, nil}
-		} else if longreordering == true && rand.Intn(900) < 600 {
+		case longreordering && rand.Intn(900) < 600:
 			// delay the response for a while
 			ms := 200 + rand.Intn(1+rand.Intn(2000))
 			// Russ points out that this timer arrangement will decrease
@@ -285,27 +296,28 @@ func (rn *Network) processReq(req reqMsg) {
 				atomic.AddInt64(&rn.bytes, int64(len(reply.reply)))
 				req.replyCh <- reply
 			})
-		} else {
+		default:
 			atomic.AddInt64(&rn.bytes, int64(len(reply.reply)))
 			req.replyCh <- reply
 		}
-	} else {
-		// simulate no reply and eventual timeout.
-		ms := 0
-		if rn.longDelays {
-			// let Raft tests check that leader doesn't send
-			// RPCs synchronously.
-			ms = (rand.Int() % 7000)
-		} else {
-			// many kv tests require the client to try each
-			// server in fairly rapid succession.
-			ms = (rand.Int() % 100)
-		}
-		time.AfterFunc(time.Duration(ms)*time.Millisecond, func() {
-			req.replyCh <- replyMsg{false, nil}
-		})
+
+		return
 	}
 
+	// simulate no reply and eventual timeout.
+	ms := rand.Int()
+	if rn.longDelays {
+		// let Raft tests check that leader doesn't send
+		// RPCs synchronously.
+		ms %= _longDelayCap
+	} else {
+		// many kv tests require the client to try each
+		// server in fairly rapid succession.
+		ms %= _shortDelayCap
+	}
+	time.AfterFunc(time.Duration(ms)*time.Millisecond, func() {
+		req.replyCh <- replyMsg{false, nil}
+	})
 }
 
 // create a client end-point.
@@ -318,10 +330,12 @@ func (rn *Network) MakeEnd(endname interface{}) *ClientEnd {
 		log.Fatalf("MakeEnd: %v already exists\n", endname)
 	}
 
-	e := &ClientEnd{}
-	e.endname = endname
-	e.ch = rn.endCh
-	e.done = rn.done
+	e := &ClientEnd{
+		endname: endname,
+		ch:      rn.endCh,
+		done:    rn.done,
+	}
+
 	rn.ends[endname] = e
 	rn.enabled[endname] = false
 	rn.connections[endname] = nil
@@ -405,7 +419,7 @@ func (rs *Server) AddService(svc *Service) {
 func (rs *Server) dispatch(req reqMsg) replyMsg {
 	rs.mu.Lock()
 
-	rs.count += 1
+	rs.count++
 
 	// split Raft.AppendEntries into service and method
 	dot := strings.LastIndex(req.svcMeth, ".")
@@ -418,20 +432,22 @@ func (rs *Server) dispatch(req reqMsg) replyMsg {
 
 	if ok {
 		return service.dispatch(methodName, req)
-	} else {
-		choices := []string{}
-		for k, _ := range rs.services {
-			choices = append(choices, k)
-		}
-		log.Fatalf("labrpc.Server.dispatch(): unknown service %v in %v.%v; expecting one of %v\n",
-			serviceName, serviceName, methodName, choices)
-		return replyMsg{false, nil}
 	}
+
+	var choices []string
+	for k := range rs.services {
+		choices = append(choices, k)
+	}
+	log.Fatalf("labrpc.Server.dispatch(): unknown service %v in %v.%v; expecting one of %v\n",
+		serviceName, serviceName, methodName, choices)
+
+	return replyMsg{false, nil}
 }
 
 func (rs *Server) GetCount() int {
 	rs.mu.Lock()
 	defer rs.mu.Unlock()
+
 	return rs.count
 }
 
@@ -445,11 +461,13 @@ type Service struct {
 }
 
 func MakeService(rcvr interface{}) *Service {
-	svc := &Service{}
-	svc.typ = reflect.TypeOf(rcvr)
-	svc.rcvr = reflect.ValueOf(rcvr)
-	svc.name = reflect.Indirect(svc.rcvr).Type().Name()
-	svc.methods = map[string]reflect.Method{}
+	rcvrVal := reflect.ValueOf(rcvr)
+	svc := &Service{
+		typ:     reflect.TypeOf(rcvr),
+		rcvr:    rcvrVal,
+		name:    reflect.Indirect(rcvrVal).Type().Name(),
+		methods: make(map[string]reflect.Method),
+	}
 
 	for m := 0; m < svc.typ.NumMethod(); m++ {
 		method := svc.typ.Method(m)
@@ -466,48 +484,51 @@ func MakeService(rcvr interface{}) *Service {
 			mtype.NumOut() != 0 {
 			// the method is not suitable for a handler
 			//fmt.Printf("bad method: %v\n", mname)
-		} else {
-			// the method looks like a handler
-			svc.methods[mname] = method
+			continue
 		}
+		// the method looks like a handler
+		svc.methods[mname] = method
 	}
 
 	return svc
 }
 
 func (svc *Service) dispatch(methname string, req reqMsg) replyMsg {
-	if method, ok := svc.methods[methname]; ok {
-		// prepare space into which to read the argument.
-		// the Value's type will be a pointer to req.argsType.
-		args := reflect.New(req.argsType)
-
-		// decode the argument.
-		ab := bytes.NewBuffer(req.args)
-		ad := labgob.NewDecoder(ab)
-		ad.Decode(args.Interface())
-
-		// allocate space for the reply.
-		replyType := method.Type.In(2)
-		replyType = replyType.Elem()
-		replyv := reflect.New(replyType)
-
-		// call the method.
-		function := method.Func
-		function.Call([]reflect.Value{svc.rcvr, args.Elem(), replyv})
-
-		// encode the reply.
-		rb := new(bytes.Buffer)
-		re := labgob.NewEncoder(rb)
-		re.EncodeValue(replyv)
-
-		return replyMsg{true, rb.Bytes()}
-	} else {
-		choices := []string{}
-		for k, _ := range svc.methods {
+	method, ok := svc.methods[methname]
+	if !ok {
+		choices := make([]string, 0, len(svc.methods))
+		for k := range svc.methods {
 			choices = append(choices, k)
 		}
+
 		log.Fatalf("labrpc.Service.dispatch(): unknown method %v in %v; expecting one of %v\n",
 			methname, req.svcMeth, choices)
 		return replyMsg{false, nil}
 	}
+
+	// prepare space into which to read the argument.
+	// the Value's type will be a pointer to req.argsType.
+	args := reflect.New(req.argsType)
+
+	// decode the argument.
+	ab := bytes.NewBuffer(req.args)
+	ad := labgob.NewDecoder(ab)
+	ad.Decode(args.Interface())
+
+	// allocate space for the reply.
+	replyType := method.Type.In(2)
+	replyType = replyType.Elem()
+	replyv := reflect.New(replyType)
+
+	// call the method.
+	function := method.Func
+	function.Call([]reflect.Value{svc.rcvr, args.Elem(), replyv})
+
+	// encode the reply.
+	rb := new(bytes.Buffer)
+	re := labgob.NewEncoder(rb)
+	re.EncodeValue(replyv)
+
+	return replyMsg{true, rb.Bytes()}
+
 }

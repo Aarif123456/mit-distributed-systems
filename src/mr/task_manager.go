@@ -6,14 +6,15 @@ import (
     "time"
 )
 
+// How we should wait on a job before timing out
 const _jobTimeout = 10 * time.Second
 
 type (
     taskManager[T any] struct {
         jobs      []T
-        nJobsDone uint64         // incremented atomically
         taskDone  []*doneTracker // done channel per job
         jobStream chan int       // gives us a job we have to do
+        nJobsDone uint64         // incremented atomically
     }
     doneTracker struct {
         // make sure task is marked as done only once
@@ -22,6 +23,9 @@ type (
     }
 )
 
+// newTaskManager returns a task manager that can handle job of type T.
+// This can also be done with an interface, but generics
+// give us type safety
 func newTaskManager[T any](jobs []T) *taskManager[T] {
     numJobs := len(jobs)
 
@@ -39,7 +43,7 @@ func newTaskManager[T any](jobs []T) *taskManager[T] {
         jobStream <- i
     }
 
-    return &taskManager[T]{jobs, 0 /* jobs done */, taskDone, jobStream}
+    return &taskManager[T]{jobs, taskDone, jobStream, 0 /* # jobs done */}
 }
 
 func (tm *taskManager[T]) Run() (T, bool) {
@@ -49,11 +53,12 @@ func (tm *taskManager[T]) Run() (T, bool) {
         return zeroVal, false
     }
     go func() {
+        // Check if job is done within time frame
         select {
         case <-tm.taskDone[nJob].doneCh:
-            // Increment done task
-            atomic.AddUint64(&tm.nJobsDone, 1)
-            // If job are done, close the stream to unblock waiting tasks
+            tm.IncrementJobsDone()
+            // If job are done, close the stream to cancel
+            // any waiting tasks
             if tm.IsDone() {
                 close(tm.jobStream)
             }
@@ -72,6 +77,10 @@ func (tm *taskManager[T]) MarkDone(nJob int) {
 
 func (tm *taskManager[T]) IsDone() bool {
     return tm.NumJobDone() == uint64(len(tm.jobs))
+}
+
+func (tm *taskManager[T]) IncrementJobsDone() {
+    atomic.AddUint64(&tm.nJobsDone, 1)
 }
 
 func (tm *taskManager[T]) NumJobDone() uint64 {

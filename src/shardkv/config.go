@@ -1,21 +1,23 @@
 package shardkv
 
-import "6.824/shardctrler"
-import "6.824/labrpc"
-import "testing"
-import "os"
+import (
+	crand "crypto/rand"
+	"encoding/base64"
+	"fmt"
+	// "log"
+	"math/big"
+	"math/rand"
+	"os"
+	"runtime"
+	"strconv"
+	"sync"
+	"testing"
+	"time"
 
-// import "log"
-import crand "crypto/rand"
-import "math/big"
-import "math/rand"
-import "encoding/base64"
-import "sync"
-import "runtime"
-import "6.824/raft"
-import "strconv"
-import "fmt"
-import "time"
+	"6.824/labrpc"
+	"6.824/raft"
+	"6.824/shardctrler"
+)
 
 func randstring(n int) string {
 	b := make([]byte, 2*n)
@@ -32,7 +34,7 @@ func makeSeed() int64 {
 }
 
 // Randomize server handles
-func random_handles(kvh []*labrpc.ClientEnd) []*labrpc.ClientEnd {
+func randomHandles(kvh []*labrpc.ClientEnd) []*labrpc.ClientEnd {
 	sa := make([]*labrpc.ClientEnd, len(kvh))
 	copy(sa, kvh)
 	for i := range sa {
@@ -54,7 +56,7 @@ type config struct {
 	mu    sync.Mutex
 	t     *testing.T
 	net   *labrpc.Network
-	start time.Time // time at which make_config() was called
+	start time.Time // time at which makeConfig() was called
 
 	nctrlers      int
 	ctrlerservers []*shardctrler.ShardCtrler
@@ -104,14 +106,14 @@ func (cfg *config) checklogs() {
 	}
 }
 
-// controler server name for labrpc.
+// controller server name for labrpc.
 func (cfg *config) ctrlername(i int) string {
 	return "ctrler" + strconv.Itoa(i)
 }
 
 // shard server name for labrpc.
 // i'th server of group gid.
-func (cfg *config) servername(gid int, i int) string {
+func (cfg *config) servername(gid, i int) string {
 	return "server-" + strconv.Itoa(gid) + "-" + strconv.Itoa(i)
 }
 
@@ -153,7 +155,7 @@ func (cfg *config) deleteClient(ck *Clerk) {
 }
 
 // Shutdown i'th server of gi'th group, by isolating it
-func (cfg *config) ShutdownServer(gi int, i int) {
+func (cfg *config) ShutdownServer(gi, i int) {
 	cfg.mu.Lock()
 	defer cfg.mu.Unlock()
 
@@ -201,7 +203,7 @@ func (cfg *config) ShutdownGroup(gi int) {
 }
 
 // start i'th server in gi'th group
-func (cfg *config) StartServer(gi int, i int) {
+func (cfg *config) StartServer(gi, i int) {
 	cfg.mu.Lock()
 
 	gg := cfg.groups[gi]
@@ -268,7 +270,7 @@ func (cfg *config) StartGroup(gi int) {
 }
 
 func (cfg *config) StartCtrlerserver(i int) {
-	// ClientEnds to talk to other controler replicas.
+	// ClientEnds to talk to other controller replicas.
 	ends := make([]*labrpc.ClientEnd, cfg.nctrlers)
 	for j := 0; j < cfg.nctrlers; j++ {
 		endname := randstring(20)
@@ -333,10 +335,10 @@ func (cfg *config) leavem(gis []int) {
 	cfg.mck.Leave(gids)
 }
 
-var ncpu_once sync.Once
+var ncpuOnce sync.Once
 
-func make_config(t *testing.T, n int, unreliable bool, maxraftstate int) *config {
-	ncpu_once.Do(func() {
+func makeConfig(t *testing.T, n int, unreliable bool, maxraftstate int) *config {
+	ncpuOnce.Do(func() {
 		if runtime.NumCPU() < 2 {
 			fmt.Printf("warning: only one CPU, which may conceal locking bugs\n")
 		}
