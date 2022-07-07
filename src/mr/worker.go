@@ -58,7 +58,7 @@ func IdleCall() *IdleReply {
 	reply := &IdleReply{}
 
 	// send the RPC request, wait for the reply.
-	call("Coordinator.Idle", &IdleArgs{}, reply)
+	_ = call("Coordinator.Idle", &IdleArgs{}, reply)
 
 	return reply
 }
@@ -89,7 +89,6 @@ func readFile(fileName string) (string, error) {
 	file, err := os.Open(fileName)
 	if err != nil {
 		return "", fmt.Errorf("cannot open %s", fileName)
-
 	}
 	defer file.Close()
 
@@ -119,6 +118,7 @@ func getFileWriters(mapTaskID, numReduceTask int) ([]*json.Encoder, error) {
 func saveToDisk(kva []KeyValue, outWriter []*json.Encoder) error {
 	n := len(outWriter)
 	for _, kv := range kva {
+		kv := kv
 		i := ihash(kv.Key) % n
 		if err := outWriter[i].Encode(&kv); err != nil {
 			return fmt.Errorf("cannot save: %w", err)
@@ -152,7 +152,7 @@ func DoneMapCall(args *DoneMapArgs) {
 	reply := &DoneMapReply{}
 
 	// send the RPC request, wait for the reply.
-	call("Coordinator.DoneMap", args, reply)
+	_ = call("Coordinator.DoneMap", args, reply)
 }
 
 func runReduce(reply *ReduceReply, reducef ReduceFunc) error {
@@ -176,7 +176,9 @@ func runReduce(reply *ReduceReply, reducef ReduceFunc) error {
 
 	// call Reduce on each distinct key in kva[],
 	// and write the result to the output file.
-	applyAndSaveReduce(kva, tmpOutFile, reducef)
+	if err := applyAndSaveReduce(kva, tmpOutFile, reducef); err != nil {
+		return err
+	}
 
 	if err := tmpOutFile.Close(); err != nil {
 		return err
@@ -196,29 +198,35 @@ func readReduceData(reduceTaskID, numMapTask int) ([]KeyValue, error) {
 
 	for mt := 0; mt < numMapTask; mt++ {
 		fileName := getMapOutFile(mt, reduceTaskID)
-		// open file
-		file, err := os.Open(fileName)
-		if err != nil {
-			return nil, fmt.Errorf("cannot open %s", fileName)
-		}
-		defer file.Close()
-
-		dec := json.NewDecoder(file)
-		for dec.More() {
-			var kv KeyValue
-			if err := dec.Decode(&kv); err != nil {
-				return nil, fmt.Errorf("cannot decode %w", err)
-			}
-			kva = append(kva, kv)
+		if err := readInKeyValue(kva, fileName); err != nil {
+			return nil, err
 		}
 	}
 
 	return kva, nil
 }
 
-func applyAndSaveReduce(kva []KeyValue, w io.Writer, reducef ReduceFunc) {
-	slow := 0
-	for slow < len(kva) {
+func readInKeyValue(kva []KeyValue, fileName string) error {
+	file, err := os.Open(fileName)
+	if err != nil {
+		return fmt.Errorf("cannot open %s", fileName)
+	}
+	defer file.Close()
+
+	dec := json.NewDecoder(file)
+	for dec.More() {
+		var kv KeyValue
+		if err := dec.Decode(&kv); err != nil {
+			return fmt.Errorf("cannot decode %w", err)
+		}
+		kva = append(kva, kv)
+	}
+
+	return nil
+}
+
+func applyAndSaveReduce(kva []KeyValue, w io.Writer, reducef ReduceFunc) error {
+	for slow := 0; slow < len(kva); {
 		fast := slow + 1
 		key := kva[slow].Key
 		for fast < len(kva) && kva[fast].Key == key {
@@ -231,10 +239,14 @@ func applyAndSaveReduce(kva []KeyValue, w io.Writer, reducef ReduceFunc) {
 		}
 
 		output := reducef(key, vals)
-		fmt.Fprintf(w, "%v %v\n", key, output)
+		if _, err := fmt.Fprintf(w, "%v %v\n", key, output); err != nil {
+			return err
+		}
 
 		slow = fast
 	}
+
+	return nil
 }
 
 func ReduceCall() (*ReduceReply, error) {
@@ -252,7 +264,7 @@ func DoneReduceCall(args *DoneReduceArgs) *DoneReduceReply {
 	reply := &DoneReduceReply{}
 
 	// send the RPC request, wait for the reply.
-	call("Coordinator.DoneReduce", args, reply)
+	_ = call("Coordinator.DoneReduce", args, reply)
 
 	return reply
 }
@@ -267,7 +279,7 @@ func getReduceOutFile(reduceTaskNum int) string {
 
 // call sends an RPC request to the coordinator, waits for the response.
 // and returns true if nothing went wrong.
-func call(rpcName string, args any, reply any) error {
+func call(rpcName string, args, reply any) error {
 	// c, err := rpc.DialHTTP("tcp", "127.0.0.1"+":1234")
 	sockName := coordinatorSock()
 	c, err := rpc.DialHTTP("unix", sockName)

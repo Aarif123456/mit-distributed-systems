@@ -59,7 +59,7 @@ func Get(cfg *config, ck *Clerk, key string, log *OpLog, cli int) string {
 	return v
 }
 
-func Put(cfg *config, ck *Clerk, key string, value string, log *OpLog, cli int) {
+func Put(cfg *config, ck *Clerk, key, value string, log *OpLog, cli int) {
 	start := time.Now().UnixNano()
 	ck.Put(key, value)
 	end := time.Now().UnixNano()
@@ -75,7 +75,7 @@ func Put(cfg *config, ck *Clerk, key string, value string, log *OpLog, cli int) 
 	}
 }
 
-func Append(cfg *config, ck *Clerk, key string, value string, log *OpLog, cli int) {
+func Append(cfg *config, ck *Clerk, key, value string, log *OpLog, cli int) {
 	start := time.Now().UnixNano()
 	ck.Append(key, value)
 	end := time.Now().UnixNano()
@@ -91,7 +91,7 @@ func Append(cfg *config, ck *Clerk, key string, value string, log *OpLog, cli in
 	}
 }
 
-func check(cfg *config, t *testing.T, ck *Clerk, key string, value string) {
+func check(cfg *config, t *testing.T, ck *Clerk, key, value string) {
 	v := Get(cfg, ck, key, nil, -1)
 	if v != value {
 		t.Fatalf("Get(%v): expected:\n%v\nreceived:\n%v", key, value, v)
@@ -126,7 +126,7 @@ func spawnClientsAndWait(t *testing.T, cfg *config, ncli int, fn func(me int, ck
 }
 
 // predict effect of Append(k, val) if old value is prev.
-func NextValue(prev string, val string) string {
+func NextValue(prev, val string) string {
 	return prev + val
 }
 
@@ -206,8 +206,7 @@ func partitioner(t *testing.T, cfg *config, ch chan bool, done *int32) {
 // maxraftstate is a positive number, the size of the state for Raft (i.e., log
 // size) shouldn't exceed 8*maxraftstate. If maxraftstate is negative,
 // snapshots shouldn't be used.
-func GenericTest(t *testing.T, part string, nclients int, nservers int, unreliable bool, crash bool, partitions bool, maxraftstate int, randomkeys bool) {
-
+func GenericTest(t *testing.T, part string, nclients, nservers int, unreliable, crash, partitions bool, maxraftstate int, randomkeys bool) {
 	title := "Test: "
 	if unreliable {
 		// the network drops RPC requests and replies.

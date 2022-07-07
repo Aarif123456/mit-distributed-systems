@@ -48,7 +48,7 @@ type config struct {
 	maxIndex0 int
 }
 
-func makeConfig(t *testing.T, n int, unreliable bool, snapshot bool) *config {
+func makeConfig(t *testing.T, n int, unreliable, snapshot bool) *config {
 	_ncpuOnce.Do(func() {
 		if runtime.NumCPU() < 2 {
 			fmt.Printf("warning: only one CPU, which may conceal locking bugs\n")
@@ -177,7 +177,8 @@ const SnapShotInterval = 10
 func (cfg *config) applierSnap(i int, applyCh <-chan ApplyMsg) {
 	lastApplied := 0
 	for m := range applyCh {
-		if m.SnapshotValid {
+		switch {
+		case m.SnapshotValid:
 			DPrintf("Installsnapshot %v %v\n", m.SnapshotIndex, lastApplied)
 			cfg.mu.Lock()
 			if cfg.rafts[i].CondInstallSnapshot(m.SnapshotTerm,
@@ -193,7 +194,7 @@ func (cfg *config) applierSnap(i int, applyCh <-chan ApplyMsg) {
 				lastApplied = m.SnapshotIndex
 			}
 			cfg.mu.Unlock()
-		} else if m.CommandValid && m.CommandIndex > lastApplied {
+		case m.CommandValid && m.CommandIndex > lastApplied:
 			DPrintf("apply %v lastApplied %v\n", m.CommandIndex, lastApplied)
 			errMsg, prevok := func() (string, bool) {
 				cfg.mu.Lock()
@@ -219,7 +220,7 @@ func (cfg *config) applierSnap(i int, applyCh <-chan ApplyMsg) {
 				e.Encode(v)
 				cfg.rafts[i].Snapshot(m.CommandIndex, w.Bytes())
 			}
-		} else {
+		default:
 			// Ignore other types of ApplyMsg or old
 			// commands. Old command may never happen,
 			// depending on the Raft implementation, but
@@ -465,7 +466,7 @@ func (cfg *config) nCommitted(index int) (int, any) {
 
 // wait for at least n servers to commit.
 // but don't wait forever.
-func (cfg *config) wait(index int, n int, startTerm int) any {
+func (cfg *config) wait(index, n, startTerm int) any {
 	to := 10 * time.Millisecond
 	for iters := 0; iters < 30; iters++ {
 		nd, _ := cfg.nCommitted(index)
