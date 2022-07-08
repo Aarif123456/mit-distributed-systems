@@ -1,0 +1,747 @@
+ env GOTRACEBACK=all go test --race -run 2A > out
+ 
+Test (2A): initial election ...
+2022/07/08 15:28:19 1 is trying to become a leader for term 1
+2022/07/08 15:28:19 1 is sendingVote request to 0
+2022/07/08 15:28:19 1 is sendingVote request to 2
+2022/07/08 15:28:19 1 asked 0 to vote for them!
+2022/07/08 15:28:19 1 asked 2 to vote for them!
+2022/07/08 15:28:19 requiredVotes 1, gotVotes3
+2022/07/08 15:28:19 1 Became a leader for term 1!
+2022/07/08 15:28:19 1 sends heartbeat request to 0
+2022/07/08 15:28:19 1 sends heartbeat request to 1
+2022/07/08 15:28:19 1 sends heartbeat request to 2
+2022/07/08 15:28:19 1 sends heartbeat request to 1
+2022/07/08 15:28:19 1 sends heartbeat request to 0
+2022/07/08 15:28:19 1 sends heartbeat request to 2
+2022/07/08 15:28:20 1 sends heartbeat request to 0
+2022/07/08 15:28:20 1 sends heartbeat request to 2
+2022/07/08 15:28:20 1 sends heartbeat request to 1
+2022/07/08 15:28:20 1 sends heartbeat request to 0
+2022/07/08 15:28:20 1 sends heartbeat request to 1
+2022/07/08 15:28:20 1 sends heartbeat request to 2
+2022/07/08 15:28:20 1 sends heartbeat request to 0
+2022/07/08 15:28:20 1 sends heartbeat request to 1
+2022/07/08 15:28:20 1 sends heartbeat request to 2
+2022/07/08 15:28:21 1 sends heartbeat request to 1
+2022/07/08 15:28:21 1 sends heartbeat request to 2
+2022/07/08 15:28:21 1 sends heartbeat request to 0
+2022/07/08 15:28:21 1 sends heartbeat request to 0
+2022/07/08 15:28:21 1 sends heartbeat request to 1
+2022/07/08 15:28:21 1 sends heartbeat request to 2
+2022/07/08 15:28:21 1 sends heartbeat request to 2
+2022/07/08 15:28:21 1 sends heartbeat request to 0
+2022/07/08 15:28:21 1 sends heartbeat request to 1
+2022/07/08 15:28:21 1 sends heartbeat request to 0
+2022/07/08 15:28:21 1 sends heartbeat request to 2
+2022/07/08 15:28:21 1 sends heartbeat request to 1
+2022/07/08 15:28:22 1 sends heartbeat request to 2
+2022/07/08 15:28:22 1 sends heartbeat request to 0
+2022/07/08 15:28:22 1 sends heartbeat request to 1
+  ... Passed --   4.0  3   32    6860    0
+Test (2A): election after network failure ...
+2022/07/08 15:28:23 1 is trying to become a leader for term 1
+2022/07/08 15:28:23 1 is sendingVote request to 2
+2022/07/08 15:28:23 1 is sendingVote request to 0
+2022/07/08 15:28:23 1 got no result from 2
+2022/07/08 15:28:23 1 got no result from 0
+2022/07/08 15:28:23 requiredVotes 1, gotVotes1
+2022/07/08 15:28:23 0 is trying to become a leader for term 1
+2022/07/08 15:28:23 0 is sendingVote request to 2
+2022/07/08 15:28:23 0 is sendingVote request to 1
+2022/07/08 15:28:23 0 asked 2 to vote for them!
+2022/07/08 15:28:23 0 asked 1 to vote for them!
+2022/07/08 15:28:23 requiredVotes 1, gotVotes3
+2022/07/08 15:28:23 0 Became a leader for term 1!
+2022/07/08 15:28:23 0 sends heartbeat request to 0
+2022/07/08 15:28:23 0 sends heartbeat request to 1
+2022/07/08 15:28:23 0 sends heartbeat request to 2
+2022/07/08 15:28:23 0 is trying to become a leader for term 1
+2022/07/08 15:28:23 0 is sendingVote request to 2
+2022/07/08 15:28:23 0 is sendingVote request to 1
+2022/07/08 15:28:23 0 got no result from 2
+2022/07/08 15:28:23 0 got no result from 1
+2022/07/08 15:28:23 requiredVotes 1, gotVotes1
+2022/07/08 15:28:23 2 is trying to become a leader for term 1
+2022/07/08 15:28:23 2 is sendingVote request to 0
+2022/07/08 15:28:23 2 got no result from 0
+2022/07/08 15:28:23 2 is sendingVote request to 1
+2022/07/08 15:28:23 2 got no result from 1
+2022/07/08 15:28:23 requiredVotes 1, gotVotes1
+2022/07/08 15:28:23 Disconnect leader
+2022/07/08 15:28:23 0 sends heartbeat request to 1
+2022/07/08 15:28:23 0 sends heartbeat request to 0
+2022/07/08 15:28:23 0 sends heartbeat request to 2
+2022/07/08 15:28:24 0 sends heartbeat request to 2
+2022/07/08 15:28:24 0 sends heartbeat request to 0
+2022/07/08 15:28:24 0 sends heartbeat request to 1
+2022/07/08 15:28:24 0 sends heartbeat request to 0
+2022/07/08 15:28:24 0 sends heartbeat request to 1
+2022/07/08 15:28:24 0 sends heartbeat request to 2
+2022/07/08 15:28:24 0 sends heartbeat request to 2
+2022/07/08 15:28:24 0 sends heartbeat request to 0
+2022/07/08 15:28:24 0 sends heartbeat request to 1
+2022/07/08 15:28:24 0 sends heartbeat request to 0
+2022/07/08 15:28:24 0 sends heartbeat request to 2
+2022/07/08 15:28:24 0 sends heartbeat request to 1
+2022/07/08 15:28:24 2 is trying to become a leader for term 2
+2022/07/08 15:28:24 2 is sendingVote request to 1
+2022/07/08 15:28:24 2 is sendingVote request to 0
+2022/07/08 15:28:24 2 asked 1 to vote for them!
+2022/07/08 15:28:25 0 sends heartbeat request to 0
+2022/07/08 15:28:25 0 sends heartbeat request to 2
+2022/07/08 15:28:25 0 sends heartbeat request to 1
+2022/07/08 15:28:25 0 sends heartbeat request to 0
+2022/07/08 15:28:25 0 sends heartbeat request to 1
+2022/07/08 15:28:25 0 sends heartbeat request to 2
+2022/07/08 15:28:25 0 sends heartbeat request to 0
+2022/07/08 15:28:25 0 sends heartbeat request to 1
+2022/07/08 15:28:25 0 sends heartbeat request to 2
+2022/07/08 15:28:25 0 sends heartbeat request to 0
+2022/07/08 15:28:25 0 sends heartbeat request to 2
+2022/07/08 15:28:25 0 sends heartbeat request to 1
+2022/07/08 15:28:26 0 sends heartbeat request to 0
+2022/07/08 15:28:26 0 sends heartbeat request to 2
+2022/07/08 15:28:26 0 sends heartbeat request to 1
+2022/07/08 15:28:26 1 is trying to become a leader for term 3
+2022/07/08 15:28:26 1 is sendingVote request to 0
+2022/07/08 15:28:26 1 is sendingVote request to 2
+2022/07/08 15:28:26 1 asked 2 to vote for them!
+2022/07/08 15:28:26 0 sends heartbeat request to 0
+2022/07/08 15:28:26 0 sends heartbeat request to 2
+2022/07/08 15:28:26 0 sends heartbeat request to 1
+2022/07/08 15:28:26 0 sends heartbeat request to 0
+2022/07/08 15:28:26 0 sends heartbeat request to 1
+2022/07/08 15:28:26 0 sends heartbeat request to 2
+2022/07/08 15:28:27 0 sends heartbeat request to 0
+2022/07/08 15:28:27 0 sends heartbeat request to 1
+2022/07/08 15:28:27 0 sends heartbeat request to 2
+2022/07/08 15:28:27 0 sends heartbeat request to 0
+2022/07/08 15:28:27 0 sends heartbeat request to 2
+2022/07/08 15:28:27 0 sends heartbeat request to 1
+2022/07/08 15:28:27 0 sends heartbeat request to 0
+2022/07/08 15:28:27 0 sends heartbeat request to 2
+2022/07/08 15:28:27 0 sends heartbeat request to 1
+2022/07/08 15:28:27 0 sends heartbeat request to 2
+2022/07/08 15:28:27 0 sends heartbeat request to 0
+2022/07/08 15:28:27 0 sends heartbeat request to 1
+2022/07/08 15:28:28 0 sends heartbeat request to 0
+2022/07/08 15:28:28 0 sends heartbeat request to 2
+2022/07/08 15:28:28 0 sends heartbeat request to 1
+2022/07/08 15:28:28 0 sends heartbeat request to 2
+2022/07/08 15:28:28 0 sends heartbeat request to 1
+2022/07/08 15:28:28 0 sends heartbeat request to 0
+2022/07/08 15:28:28 0 sends heartbeat request to 0
+2022/07/08 15:28:28 0 sends heartbeat request to 2
+2022/07/08 15:28:28 0 sends heartbeat request to 1
+--- FAIL: TestReElection2A (6.42s)
+panic: expected one leader, got none [recovered]
+	panic: expected one leader, got none
+
+goroutine 132 [running]:
+testing.tRunner.func1.2({0x6de700, 0xc00021bf00})
+	/usr/local/go/src/testing/testing.go:1389 +0x366
+testing.tRunner.func1()
+	/usr/local/go/src/testing/testing.go:1392 +0x5d2
+panic({0x6de700, 0xc00021bf00})
+	/usr/local/go/src/runtime/panic.go:844 +0x258
+6.824/raft.(*config).checkOneLeader(0xc00013e900)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/config.go:407 +0x554
+6.824/raft.TestReElection2A(0x0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/test_test.go:69 +0x10f
+testing.tRunner(0xc000289ba0, 0x7344f8)
+	/usr/local/go/src/testing/testing.go:1439 +0x214
+created by testing.(*T).Run
+	/usr/local/go/src/testing/testing.go:1486 +0x725
+
+goroutine 1 [chan receive]:
+testing.(*T).Run(0xc00012cea0, {0x726904, 0x10}, 0x7344f8)
+	/usr/local/go/src/testing/testing.go:1487 +0x750
+testing.runTests.func1(0x0?)
+	/usr/local/go/src/testing/testing.go:1839 +0x9a
+testing.tRunner(0xc00012cea0, 0xc00014fba0)
+	/usr/local/go/src/testing/testing.go:1439 +0x214
+testing.runTests(0xc0001201e0?, {0x8db5e0, 0x19, 0x19}, {0x40?, 0x7fb917ba3118?, 0x8df6a0?})
+	/usr/local/go/src/testing/testing.go:1837 +0x7e5
+testing.(*M).Run(0xc0001201e0)
+	/usr/local/go/src/testing/testing.go:1719 +0xa72
+main.main()
+	_testmain.go:95 +0x2e5
+
+goroutine 216 [chan receive]:
+6.824/labrpc.(*ClientEnd).Call(0xc00006bb00, {0x727245, 0x12}, {0x6d5520, 0xc0002b84c0}, {0x6d5560, 0xc00028deb0})
+	/home/abdullahmeo11/code/MIT/6.824/src/labrpc/labrpc.go:123 +0x385
+6.824/raft.(*Peers).Call(0xc000292b40, {0x727245, 0x12}, 0x0, {0x6d5520, 0xc0002b84c0}, {0x6d5560, 0xc00028deb0})
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:21 +0x166
+6.824/raft.(*Peers).AppendEntries(0xc00029ee00?, 0xc0000a8e40?, 0xc0002b84c0, 0xc0002b2cc0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:67 +0xfb
+6.824/raft.(*Term).updateFollowers.func1(0x62?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:147 +0x6d
+created by 6.824/raft.(*Term).updateFollowers
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:146 +0x1fb
+
+goroutine 95 [chan receive]:
+6.824/raft.(*Term).updateFollowers(0xc000292b70, 0x0, 0xc000292b40, 0x1, 0x49d8e1?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:154 +0x196
+created by 6.824/raft.(*Term).BecomeLeader
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:107 +0x33e
+
+goroutine 155 [chan receive]:
+6.824/labrpc.(*ClientEnd).Call(0xc00006bb20, {0x727245, 0x12}, {0x6d5520, 0xc00025fb40}, {0x6d5560, 0xc0002613e0})
+	/home/abdullahmeo11/code/MIT/6.824/src/labrpc/labrpc.go:123 +0x385
+6.824/raft.(*Peers).Call(0xc000292b40, {0x727245, 0x12}, 0x1, {0x6d5520, 0xc00025fb40}, {0x6d5560, 0xc0002613e0})
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:21 +0x166
+6.824/raft.(*Peers).AppendEntries(0x107?, 0xc0000a8ae0?, 0xc00025fb40, 0xc0002b28a0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:67 +0xfb
+6.824/raft.(*Term).updateFollowers.func1(0x9a?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:147 +0x6d
+created by 6.824/raft.(*Term).updateFollowers
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:146 +0x1fb
+
+goroutine 162 [chan receive]:
+6.824/labrpc.(*ClientEnd).Call(0xc00006bb00, {0x727245, 0x12}, {0x6d5520, 0xc0000df180}, {0x6d5560, 0xc0000dd840})
+	/home/abdullahmeo11/code/MIT/6.824/src/labrpc/labrpc.go:123 +0x385
+6.824/raft.(*Peers).Call(0xc000292b40, {0x727245, 0x12}, 0x0, {0x6d5520, 0xc0000df180}, {0x6d5560, 0xc0000dd840})
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:21 +0x166
+6.824/raft.(*Peers).AppendEntries(0xc000013f88?, 0xc000260fb0?, 0xc0000df180, 0xc000260fc8?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:67 +0xfb
+6.824/raft.(*Term).updateFollowers.func1(0x9a?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:147 +0x6d
+created by 6.824/raft.(*Term).updateFollowers
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:146 +0x1fb
+
+goroutine 206 [chan receive]:
+6.824/labrpc.(*ClientEnd).Call(0xc00006bb20, {0x727245, 0x12}, {0x6d5520, 0xc00030ac40}, {0x6d5560, 0xc00030c670})
+	/home/abdullahmeo11/code/MIT/6.824/src/labrpc/labrpc.go:123 +0x385
+6.824/raft.(*Peers).Call(0xc000292b40, {0x727245, 0x12}, 0x1, {0x6d5520, 0xc00030ac40}, {0x6d5560, 0xc00030c670})
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:21 +0x166
+6.824/raft.(*Peers).AppendEntries(0xc000236788?, 0x437bdd?, 0xc00030ac40, 0xc0002367b0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:67 +0xfb
+6.824/raft.(*Term).updateFollowers.func1(0x0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:147 +0x6d
+created by 6.824/raft.(*Term).updateFollowers
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:146 +0x1fb
+
+goroutine 200 [chan receive]:
+6.824/labrpc.(*ClientEnd).Call(0xc00006bb00, {0x727245, 0x12}, {0x6d5520, 0xc00030a9c0}, {0x6d5560, 0xc00030c550})
+	/home/abdullahmeo11/code/MIT/6.824/src/labrpc/labrpc.go:123 +0x385
+6.824/raft.(*Peers).Call(0xc000292b40, {0x727245, 0x12}, 0x0, {0x6d5520, 0xc00030a9c0}, {0x6d5560, 0xc00030c550})
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:21 +0x166
+6.824/raft.(*Peers).AppendEntries(0x107?, 0xc0000a8d80?, 0xc00030a9c0, 0xc00030e120?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:67 +0xfb
+6.824/raft.(*Term).updateFollowers.func1(0x0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:147 +0x6d
+created by 6.824/raft.(*Term).updateFollowers
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:146 +0x1fb
+
+goroutine 294 [chan receive]:
+6.824/labrpc.(*ClientEnd).Call(0xc00006bb40, {0x727245, 0x12}, {0x6d5520, 0xc00030b040}, {0x6d5560, 0xc00030c860})
+	/home/abdullahmeo11/code/MIT/6.824/src/labrpc/labrpc.go:123 +0x385
+6.824/raft.(*Peers).Call(0xc000292b40, {0x727245, 0x12}, 0x2, {0x6d5520, 0xc00030b040}, {0x6d5560, 0xc00030c860})
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:21 +0x166
+6.824/raft.(*Peers).AppendEntries(0xc0000d5b20?, 0xc0001b0540?, 0xc00030b040, 0xc000028f60?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:67 +0xfb
+6.824/raft.(*Term).updateFollowers.func1(0x9c?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:147 +0x6d
+created by 6.824/raft.(*Term).updateFollowers
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:146 +0x1fb
+
+goroutine 293 [chan receive]:
+6.824/labrpc.(*ClientEnd).Call(0xc00006bb20, {0x727245, 0x12}, {0x6d5520, 0xc00030b000}, {0x6d5560, 0xc00030c850})
+	/home/abdullahmeo11/code/MIT/6.824/src/labrpc/labrpc.go:123 +0x385
+6.824/raft.(*Peers).Call(0xc000292b40, {0x727245, 0x12}, 0x1, {0x6d5520, 0xc00030b000}, {0x6d5560, 0xc00030c850})
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:21 +0x166
+6.824/raft.(*Peers).AppendEntries(0xc00004cf88?, 0x437bdd?, 0xc00030b000, 0xc00004cfb0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:67 +0xfb
+6.824/raft.(*Term).updateFollowers.func1(0x0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:147 +0x6d
+created by 6.824/raft.(*Term).updateFollowers
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:146 +0x1fb
+
+goroutine 207 [chan receive]:
+6.824/labrpc.(*ClientEnd).Call(0xc00006bb40, {0x727245, 0x12}, {0x6d5520, 0xc00030ac80}, {0x6d5560, 0xc00030c680})
+	/home/abdullahmeo11/code/MIT/6.824/src/labrpc/labrpc.go:123 +0x385
+6.824/raft.(*Peers).Call(0xc000292b40, {0x727245, 0x12}, 0x2, {0x6d5520, 0xc00030ac80}, {0x6d5560, 0xc00030c680})
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:21 +0x166
+6.824/raft.(*Peers).AppendEntries(0x107?, 0xc0000a84e0?, 0xc00030ac80, 0xc000181440?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:67 +0xfb
+6.824/raft.(*Term).updateFollowers.func1(0x0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:147 +0x6d
+created by 6.824/raft.(*Term).updateFollowers
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:146 +0x1fb
+
+goroutine 298 [chan receive]:
+6.824/labrpc.(*ClientEnd).Call(0xc00006bb00, {0x727245, 0x12}, {0x6d5520, 0xc00030b200}, {0x6d5560, 0xc00030c940})
+	/home/abdullahmeo11/code/MIT/6.824/src/labrpc/labrpc.go:123 +0x385
+6.824/raft.(*Peers).Call(0xc000292b40, {0x727245, 0x12}, 0x0, {0x6d5520, 0xc00030b200}, {0x6d5560, 0xc00030c940})
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:21 +0x166
+6.824/raft.(*Peers).AppendEntries(0x107?, 0xc00007dc20?, 0xc00030b200, 0xc00030e8a0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:67 +0xfb
+6.824/raft.(*Term).updateFollowers.func1(0x0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:147 +0x6d
+created by 6.824/raft.(*Term).updateFollowers
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:146 +0x1fb
+
+goroutine 163 [chan receive]:
+6.824/labrpc.(*ClientEnd).Call(0xc00006bb20, {0x727245, 0x12}, {0x6d5520, 0xc0000df1c0}, {0x6d5560, 0xc0000dd850})
+	/home/abdullahmeo11/code/MIT/6.824/src/labrpc/labrpc.go:123 +0x385
+6.824/raft.(*Peers).Call(0xc000292b40, {0x727245, 0x12}, 0x1, {0x6d5520, 0xc0000df1c0}, {0x6d5560, 0xc0000dd850})
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:21 +0x166
+6.824/raft.(*Peers).AppendEntries(0xc000013d08?, 0xc0000dd6b0?, 0xc0000df1c0, 0xc0000dd6c8?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:67 +0xfb
+6.824/raft.(*Term).updateFollowers.func1(0x60?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:147 +0x6d
+created by 6.824/raft.(*Term).updateFollowers
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:146 +0x1fb
+
+goroutine 134 [select]:
+6.824/raft.(*Raft).ticker(0xc00028e800)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/raft.go:355 +0x11a
+created by 6.824/raft.Make
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/raft.go:117 +0x3b7
+
+goroutine 156 [chan receive]:
+6.824/labrpc.(*ClientEnd).Call(0xc00006bb40, {0x727245, 0x12}, {0x6d5520, 0xc00025fb80}, {0x6d5560, 0xc0002613f0})
+	/home/abdullahmeo11/code/MIT/6.824/src/labrpc/labrpc.go:123 +0x385
+6.824/raft.(*Peers).Call(0xc000292b40, {0x727245, 0x12}, 0x2, {0x6d5520, 0xc00025fb80}, {0x6d5560, 0xc0002613f0})
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:21 +0x166
+6.824/raft.(*Peers).AppendEntries(0x107?, 0xc0001b0d20?, 0xc00025fb80, 0xc000201e00?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:67 +0xfb
+6.824/raft.(*Term).updateFollowers.func1(0x0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:147 +0x6d
+created by 6.824/raft.(*Term).updateFollowers
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:146 +0x1fb
+
+goroutine 173 [chan receive]:
+6.824/labrpc.(*ClientEnd).Call(0xc00006bbc0, {0x7268c4, 0x10}, {0x6d5620, 0xc0000e53a0}, {0x6d5660, 0xc0003801b0})
+	/home/abdullahmeo11/code/MIT/6.824/src/labrpc/labrpc.go:123 +0x385
+6.824/raft.(*Peers).Call(0xc000292d20, {0x7268c4, 0x10}, 0x0, {0x6d5620, 0xc0000e53a0}, {0x6d5660, 0xc0003801b0})
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:21 +0x166
+6.824/raft.(*Peers).SendRequestVote(0xc0002ae000?, 0xc00017afa0?, 0xc0000e53a0, 0xc00017aea0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:61 +0xfb
+6.824/raft.(*Raft).becomeCandidate.func1(0x6b8f7a?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/raft.go:418 +0x205
+created by 6.824/raft.(*Raft).becomeCandidate
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/raft.go:407 +0x57b
+
+goroutine 157 [chan receive]:
+6.824/labrpc.(*ClientEnd).Call(0xc00006bb00, {0x727245, 0x12}, {0x6d5520, 0xc00025fd40}, {0x6d5560, 0xc0002614d0})
+	/home/abdullahmeo11/code/MIT/6.824/src/labrpc/labrpc.go:123 +0x385
+6.824/raft.(*Peers).Call(0xc000292b40, {0x727245, 0x12}, 0x0, {0x6d5520, 0xc00025fd40}, {0x6d5560, 0xc0002614d0})
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:21 +0x166
+6.824/raft.(*Peers).AppendEntries(0x107?, 0xc0001b0d20?, 0xc00025fd40, 0xc000201e00?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:67 +0xfb
+6.824/raft.(*Term).updateFollowers.func1(0x0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:147 +0x6d
+created by 6.824/raft.(*Term).updateFollowers
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:146 +0x1fb
+
+goroutine 202 [chan receive]:
+6.824/labrpc.(*ClientEnd).Call(0xc00006bb40, {0x727245, 0x12}, {0x6d5520, 0xc00030aa40}, {0x6d5560, 0xc00030c570})
+	/home/abdullahmeo11/code/MIT/6.824/src/labrpc/labrpc.go:123 +0x385
+6.824/raft.(*Peers).Call(0xc000292b40, {0x727245, 0x12}, 0x2, {0x6d5520, 0xc00030aa40}, {0x6d5560, 0xc00030c570})
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:21 +0x166
+6.824/raft.(*Peers).AppendEntries(0x0?, 0x0?, 0xc00030aa40, 0x0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:67 +0xfb
+6.824/raft.(*Term).updateFollowers.func1(0x0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:147 +0x6d
+created by 6.824/raft.(*Term).updateFollowers
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:146 +0x1fb
+
+goroutine 167 [chan receive]:
+6.824/labrpc.(*ClientEnd).Call(0xc00006bc80, {0x7268c4, 0x10}, {0x6d5620, 0xc0001fad80}, {0x6d5660, 0xc00030c030})
+	/home/abdullahmeo11/code/MIT/6.824/src/labrpc/labrpc.go:123 +0x385
+6.824/raft.(*Peers).Call(0xc000292f00, {0x7268c4, 0x10}, 0x0, {0x6d5620, 0xc0001fad80}, {0x6d5660, 0xc00030c030})
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:21 +0x166
+6.824/raft.(*Peers).SendRequestVote(0x4a06f7?, 0x6bc26d?, 0xc0001fad80, 0x6b7ae5?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:61 +0xfb
+6.824/raft.(*Raft).becomeCandidate.func1(0x0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/raft.go:418 +0x205
+created by 6.824/raft.(*Raft).becomeCandidate
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/raft.go:407 +0x57b
+
+goroutine 136 [semacquire]:
+sync.runtime_Semacquire(0xc000380198?)
+	/usr/local/go/src/runtime/sema.go:56 +0x25
+sync.(*WaitGroup).Wait(0xc000380190)
+	/usr/local/go/src/sync/waitgroup.go:136 +0x9c
+6.824/raft.(*Raft).becomeCandidate(0xc00028e940)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/raft.go:431 +0x5af
+6.824/raft.(*Raft).ticker(0xc00028e940)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/raft.go:361 +0x16b
+created by 6.824/raft.Make
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/raft.go:117 +0x3b7
+
+goroutine 243 [chan receive]:
+6.824/labrpc.(*ClientEnd).Call(0xc00006bb20, {0x727245, 0x12}, {0x6d5520, 0xc000382640}, {0x6d5560, 0xc000380410})
+	/home/abdullahmeo11/code/MIT/6.824/src/labrpc/labrpc.go:123 +0x385
+6.824/raft.(*Peers).Call(0xc000292b40, {0x727245, 0x12}, 0x1, {0x6d5520, 0xc000382640}, {0x6d5560, 0xc000380410})
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:21 +0x166
+6.824/raft.(*Peers).AppendEntries(0x107?, 0xc00007d740?, 0xc000382640, 0xc00030e0c0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:67 +0xfb
+6.824/raft.(*Term).updateFollowers.func1(0x0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:147 +0x6d
+created by 6.824/raft.(*Term).updateFollowers
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:146 +0x1fb
+
+goroutine 138 [semacquire]:
+sync.runtime_Semacquire(0xc0000ddb18?)
+	/usr/local/go/src/runtime/sema.go:56 +0x25
+sync.(*WaitGroup).Wait(0xc0000ddb10)
+	/usr/local/go/src/sync/waitgroup.go:136 +0x9c
+6.824/raft.(*Raft).becomeCandidate(0xc00028ea80)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/raft.go:431 +0x5af
+6.824/raft.(*Raft).ticker(0xc00028ea80)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/raft.go:361 +0x16b
+created by 6.824/raft.Make
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/raft.go:117 +0x3b7
+
+goroutine 182 [chan receive]:
+6.824/labrpc.(*ClientEnd).Call(0xc00006bb00, {0x727245, 0x12}, {0x6d5520, 0xc00028f800}, {0x6d5560, 0xc00028d5a0})
+	/home/abdullahmeo11/code/MIT/6.824/src/labrpc/labrpc.go:123 +0x385
+6.824/raft.(*Peers).Call(0xc000292b40, {0x727245, 0x12}, 0x0, {0x6d5520, 0xc00028f800}, {0x6d5560, 0xc00028d5a0})
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:21 +0x166
+6.824/raft.(*Peers).AppendEntries(0x0?, 0x0?, 0xc00028f800, 0x0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:67 +0xfb
+6.824/raft.(*Term).updateFollowers.func1(0x0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:147 +0x6d
+created by 6.824/raft.(*Term).updateFollowers
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:146 +0x1fb
+
+goroutine 179 [chan receive]:
+6.824/labrpc.(*ClientEnd).Call(0xc00006bb40, {0x727245, 0x12}, {0x6d5520, 0xc00028f640}, {0x6d5560, 0xc00028d4b0})
+	/home/abdullahmeo11/code/MIT/6.824/src/labrpc/labrpc.go:123 +0x385
+6.824/raft.(*Peers).Call(0xc000292b40, {0x727245, 0x12}, 0x2, {0x6d5520, 0xc00028f640}, {0x6d5560, 0xc00028d4b0})
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:21 +0x166
+6.824/raft.(*Peers).AppendEntries(0xc00029e770?, 0xc00028cf40?, 0xc00028f640, 0xc00028cf58?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:67 +0xfb
+6.824/raft.(*Term).updateFollowers.func1(0x60?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:147 +0x6d
+created by 6.824/raft.(*Term).updateFollowers
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:146 +0x1fb
+
+goroutine 183 [chan receive]:
+6.824/labrpc.(*ClientEnd).Call(0xc00006bb20, {0x727245, 0x12}, {0x6d5520, 0xc00028f840}, {0x6d5560, 0xc00028d5b0})
+	/home/abdullahmeo11/code/MIT/6.824/src/labrpc/labrpc.go:123 +0x385
+6.824/raft.(*Peers).Call(0xc000292b40, {0x727245, 0x12}, 0x1, {0x6d5520, 0xc00028f840}, {0x6d5560, 0xc00028d5b0})
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:21 +0x166
+6.824/raft.(*Peers).AppendEntries(0xc000236788?, 0x437bdd?, 0xc00028f840, 0xc0002367b0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:67 +0xfb
+6.824/raft.(*Term).updateFollowers.func1(0x0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:147 +0x6d
+created by 6.824/raft.(*Term).updateFollowers
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:146 +0x1fb
+
+goroutine 184 [chan receive]:
+6.824/labrpc.(*ClientEnd).Call(0xc00006bb40, {0x727245, 0x12}, {0x6d5520, 0xc00028f880}, {0x6d5560, 0xc00028d5c0})
+	/home/abdullahmeo11/code/MIT/6.824/src/labrpc/labrpc.go:123 +0x385
+6.824/raft.(*Peers).Call(0xc000292b40, {0x727245, 0x12}, 0x2, {0x6d5520, 0xc00028f880}, {0x6d5560, 0xc00028d5c0})
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:21 +0x166
+6.824/raft.(*Peers).AppendEntries(0x0?, 0x0?, 0xc00028f880, 0x0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:67 +0xfb
+6.824/raft.(*Term).updateFollowers.func1(0x0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:147 +0x6d
+created by 6.824/raft.(*Term).updateFollowers
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:146 +0x1fb
+
+goroutine 186 [chan receive]:
+6.824/labrpc.(*ClientEnd).Call(0xc00006bb20, {0x727245, 0x12}, {0x6d5520, 0xc00028f900}, {0x6d5560, 0xc00028d5f0})
+	/home/abdullahmeo11/code/MIT/6.824/src/labrpc/labrpc.go:123 +0x385
+6.824/raft.(*Peers).Call(0xc000292b40, {0x727245, 0x12}, 0x1, {0x6d5520, 0xc00028f900}, {0x6d5560, 0xc00028d5f0})
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:21 +0x166
+6.824/raft.(*Peers).AppendEntries(0x0?, 0x0?, 0xc00028f900, 0x0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:67 +0xfb
+6.824/raft.(*Term).updateFollowers.func1(0x0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:147 +0x6d
+created by 6.824/raft.(*Term).updateFollowers
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:146 +0x1fb
+
+goroutine 187 [chan receive]:
+6.824/labrpc.(*ClientEnd).Call(0xc00006bb40, {0x727245, 0x12}, {0x6d5520, 0xc00028f940}, {0x6d5560, 0xc00028d600})
+	/home/abdullahmeo11/code/MIT/6.824/src/labrpc/labrpc.go:123 +0x385
+6.824/raft.(*Peers).Call(0xc000292b40, {0x727245, 0x12}, 0x2, {0x6d5520, 0xc00028f940}, {0x6d5560, 0xc00028d600})
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:21 +0x166
+6.824/raft.(*Peers).AppendEntries(0xc000236788?, 0x437bdd?, 0xc00028f940, 0xc0002367b0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:67 +0xfb
+6.824/raft.(*Term).updateFollowers.func1(0x0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:147 +0x6d
+created by 6.824/raft.(*Term).updateFollowers
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:146 +0x1fb
+
+goroutine 218 [chan receive]:
+6.824/labrpc.(*ClientEnd).Call(0xc00006bb40, {0x727245, 0x12}, {0x6d5520, 0xc0002b8540}, {0x6d5560, 0xc00028ded0})
+	/home/abdullahmeo11/code/MIT/6.824/src/labrpc/labrpc.go:123 +0x385
+6.824/raft.(*Peers).Call(0xc000292b40, {0x727245, 0x12}, 0x2, {0x6d5520, 0xc0002b8540}, {0x6d5560, 0xc00028ded0})
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:21 +0x166
+6.824/raft.(*Peers).AppendEntries(0x107?, 0xc000210fc0?, 0xc0002b8540, 0xc0002b2d20?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:67 +0xfb
+6.824/raft.(*Term).updateFollowers.func1(0x9a?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:147 +0x6d
+created by 6.824/raft.(*Term).updateFollowers
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:146 +0x1fb
+
+goroutine 192 [chan receive]:
+6.824/labrpc.(*ClientEnd).Call(0xc00006bb20, {0x727245, 0x12}, {0x6d5520, 0xc00028fb40}, {0x6d5560, 0xc00028d700})
+	/home/abdullahmeo11/code/MIT/6.824/src/labrpc/labrpc.go:123 +0x385
+6.824/raft.(*Peers).Call(0xc000292b40, {0x727245, 0x12}, 0x1, {0x6d5520, 0xc00028fb40}, {0x6d5560, 0xc00028d700})
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:21 +0x166
+6.824/raft.(*Peers).AppendEntries(0x107?, 0xc0000a8ae0?, 0xc00028fb40, 0xc0002b28a0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:67 +0xfb
+6.824/raft.(*Term).updateFollowers.func1(0x9a?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:147 +0x6d
+created by 6.824/raft.(*Term).updateFollowers
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:146 +0x1fb
+
+goroutine 205 [chan receive]:
+6.824/labrpc.(*ClientEnd).Call(0xc00006bb00, {0x727245, 0x12}, {0x6d5520, 0xc00030ac00}, {0x6d5560, 0xc00030c660})
+	/home/abdullahmeo11/code/MIT/6.824/src/labrpc/labrpc.go:123 +0x385
+6.824/raft.(*Peers).Call(0xc000292b40, {0x727245, 0x12}, 0x0, {0x6d5520, 0xc00030ac00}, {0x6d5560, 0xc00030c660})
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:21 +0x166
+6.824/raft.(*Peers).AppendEntries(0x0?, 0x0?, 0xc00030ac00, 0x0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:67 +0xfb
+6.824/raft.(*Term).updateFollowers.func1(0x0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:147 +0x6d
+created by 6.824/raft.(*Term).updateFollowers
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:146 +0x1fb
+
+goroutine 158 [chan receive]:
+6.824/labrpc.(*ClientEnd).Call(0xc00006bb20, {0x727245, 0x12}, {0x6d5520, 0xc00025fd80}, {0x6d5560, 0xc0002614e0})
+	/home/abdullahmeo11/code/MIT/6.824/src/labrpc/labrpc.go:123 +0x385
+6.824/raft.(*Peers).Call(0xc000292b40, {0x727245, 0x12}, 0x1, {0x6d5520, 0xc00025fd80}, {0x6d5560, 0xc0002614e0})
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:21 +0x166
+6.824/raft.(*Peers).AppendEntries(0xc00025d570?, 0x0?, 0xc00025fd80, 0x0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:67 +0xfb
+6.824/raft.(*Term).updateFollowers.func1(0x9c?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:147 +0x6d
+created by 6.824/raft.(*Term).updateFollowers
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:146 +0x1fb
+
+goroutine 220 [chan receive]:
+6.824/labrpc.(*ClientEnd).Call(0xc00006bb00, {0x727245, 0x12}, {0x6d5520, 0xc0002b8700}, {0x6d5560, 0xc00028dfc0})
+	/home/abdullahmeo11/code/MIT/6.824/src/labrpc/labrpc.go:123 +0x385
+6.824/raft.(*Peers).Call(0xc000292b40, {0x727245, 0x12}, 0x0, {0x6d5520, 0xc0002b8700}, {0x6d5560, 0xc00028dfc0})
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:21 +0x166
+6.824/raft.(*Peers).AppendEntries(0x107?, 0xc000210fc0?, 0xc0002b8700, 0xc0002b2d20?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:67 +0xfb
+6.824/raft.(*Term).updateFollowers.func1(0x9a?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:147 +0x6d
+created by 6.824/raft.(*Term).updateFollowers
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:146 +0x1fb
+
+goroutine 226 [chan receive]:
+6.824/labrpc.(*ClientEnd).Call(0xc00006bb00, {0x727245, 0x12}, {0x6d5520, 0xc000276100}, {0x6d5560, 0xc0002616a0})
+	/home/abdullahmeo11/code/MIT/6.824/src/labrpc/labrpc.go:123 +0x385
+6.824/raft.(*Peers).Call(0xc000292b40, {0x727245, 0x12}, 0x0, {0x6d5520, 0xc000276100}, {0x6d5560, 0xc0002616a0})
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:21 +0x166
+6.824/raft.(*Peers).AppendEntries(0x107?, 0xc000210f00?, 0xc000276100, 0xc00026c1e0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:67 +0xfb
+6.824/raft.(*Term).updateFollowers.func1(0x0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:147 +0x6d
+created by 6.824/raft.(*Term).updateFollowers
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:146 +0x1fb
+
+goroutine 227 [chan receive]:
+6.824/labrpc.(*ClientEnd).Call(0xc00006bb20, {0x727245, 0x12}, {0x6d5520, 0xc000276140}, {0x6d5560, 0xc0002616b0})
+	/home/abdullahmeo11/code/MIT/6.824/src/labrpc/labrpc.go:123 +0x385
+6.824/raft.(*Peers).Call(0xc000292b40, {0x727245, 0x12}, 0x1, {0x6d5520, 0xc000276140}, {0x6d5560, 0xc0002616b0})
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:21 +0x166
+6.824/raft.(*Peers).AppendEntries(0x0?, 0x0?, 0xc000276140, 0x0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:67 +0xfb
+6.824/raft.(*Term).updateFollowers.func1(0x0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:147 +0x6d
+created by 6.824/raft.(*Term).updateFollowers
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:146 +0x1fb
+
+goroutine 225 [chan receive]:
+6.824/labrpc.(*ClientEnd).Call(0xc00006bb00, {0x727245, 0x12}, {0x6d5520, 0xc0002b8c40}, {0x6d5560, 0xc0002c0260})
+	/home/abdullahmeo11/code/MIT/6.824/src/labrpc/labrpc.go:123 +0x385
+6.824/raft.(*Peers).Call(0xc000292b40, {0x727245, 0x12}, 0x0, {0x6d5520, 0xc0002b8c40}, {0x6d5560, 0xc0002c0260})
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:21 +0x166
+6.824/raft.(*Peers).AppendEntries(0x107?, 0xc0001b1080?, 0xc0002b8c40, 0xc00030e540?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:67 +0xfb
+6.824/raft.(*Term).updateFollowers.func1(0x0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:147 +0x6d
+created by 6.824/raft.(*Term).updateFollowers
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:146 +0x1fb
+
+goroutine 229 [chan receive]:
+6.824/labrpc.(*ClientEnd).Call(0xc00006bb00, {0x727245, 0x12}, {0x6d5520, 0xc0002761c0}, {0x6d5560, 0xc0002616e0})
+	/home/abdullahmeo11/code/MIT/6.824/src/labrpc/labrpc.go:123 +0x385
+6.824/raft.(*Peers).Call(0xc000292b40, {0x727245, 0x12}, 0x0, {0x6d5520, 0xc0002761c0}, {0x6d5560, 0xc0002616e0})
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:21 +0x166
+6.824/raft.(*Peers).AppendEntries(0x0?, 0x0?, 0xc0002761c0, 0x0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:67 +0xfb
+6.824/raft.(*Term).updateFollowers.func1(0x0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:147 +0x6d
+created by 6.824/raft.(*Term).updateFollowers
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:146 +0x1fb
+
+goroutine 274 [chan receive]:
+6.824/labrpc.(*ClientEnd).Call(0xc00006bb20, {0x727245, 0x12}, {0x6d5520, 0xc0002b8c80}, {0x6d5560, 0xc0002c0270})
+	/home/abdullahmeo11/code/MIT/6.824/src/labrpc/labrpc.go:123 +0x385
+6.824/raft.(*Peers).Call(0xc000292b40, {0x727245, 0x12}, 0x1, {0x6d5520, 0xc0002b8c80}, {0x6d5560, 0xc0002c0270})
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:21 +0x166
+6.824/raft.(*Peers).AppendEntries(0x107?, 0xc00007da40?, 0xc0002b8c80, 0xc0002b31a0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:67 +0xfb
+6.824/raft.(*Term).updateFollowers.func1(0x0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:147 +0x6d
+created by 6.824/raft.(*Term).updateFollowers
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:146 +0x1fb
+
+goroutine 221 [chan receive]:
+6.824/labrpc.(*ClientEnd).Call(0xc00006bb20, {0x727245, 0x12}, {0x6d5520, 0xc0002b8740}, {0x6d5560, 0xc00028dfd0})
+	/home/abdullahmeo11/code/MIT/6.824/src/labrpc/labrpc.go:123 +0x385
+6.824/raft.(*Peers).Call(0xc000292b40, {0x727245, 0x12}, 0x1, {0x6d5520, 0xc0002b8740}, {0x6d5560, 0xc00028dfd0})
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:21 +0x166
+6.824/raft.(*Peers).AppendEntries(0xc00023c788?, 0x437bdd?, 0xc0002b8740, 0xc00023c7b0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:67 +0xfb
+6.824/raft.(*Term).updateFollowers.func1(0x0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:147 +0x6d
+created by 6.824/raft.(*Term).updateFollowers
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:146 +0x1fb
+
+goroutine 242 [chan receive]:
+6.824/labrpc.(*ClientEnd).Call(0xc00006bb00, {0x727245, 0x12}, {0x6d5520, 0xc000382600}, {0x6d5560, 0xc000380400})
+	/home/abdullahmeo11/code/MIT/6.824/src/labrpc/labrpc.go:123 +0x385
+6.824/raft.(*Peers).Call(0xc000292b40, {0x727245, 0x12}, 0x0, {0x6d5520, 0xc000382600}, {0x6d5560, 0xc000380400})
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:21 +0x166
+6.824/raft.(*Peers).AppendEntries(0x107?, 0xc0000a8fc0?, 0xc000382600, 0xc00038c060?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:67 +0xfb
+6.824/raft.(*Term).updateFollowers.func1(0x0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:147 +0x6d
+created by 6.824/raft.(*Term).updateFollowers
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:146 +0x1fb
+
+goroutine 260 [chan receive]:
+6.824/labrpc.(*ClientEnd).Call(0xc00006bb20, {0x727245, 0x12}, {0x6d5520, 0xc000276bc0}, {0x6d5560, 0xc000261c00})
+	/home/abdullahmeo11/code/MIT/6.824/src/labrpc/labrpc.go:123 +0x385
+6.824/raft.(*Peers).Call(0xc000292b40, {0x727245, 0x12}, 0x1, {0x6d5520, 0xc000276bc0}, {0x6d5560, 0xc000261c00})
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:21 +0x166
+6.824/raft.(*Peers).AppendEntries(0x107?, 0xc0001b0fc0?, 0xc000276bc0, 0xc00026c3c0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:67 +0xfb
+6.824/raft.(*Term).updateFollowers.func1(0x0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:147 +0x6d
+created by 6.824/raft.(*Term).updateFollowers
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:146 +0x1fb
+
+goroutine 259 [chan receive]:
+6.824/labrpc.(*ClientEnd).Call(0xc00006bb00, {0x727245, 0x12}, {0x6d5520, 0xc000276b80}, {0x6d5560, 0xc000261bf0})
+	/home/abdullahmeo11/code/MIT/6.824/src/labrpc/labrpc.go:123 +0x385
+6.824/raft.(*Peers).Call(0xc000292b40, {0x727245, 0x12}, 0x0, {0x6d5520, 0xc000276b80}, {0x6d5560, 0xc000261bf0})
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:21 +0x166
+6.824/raft.(*Peers).AppendEntries(0x107?, 0xc000211140?, 0xc000276b80, 0xc00026ca80?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:67 +0xfb
+6.824/raft.(*Term).updateFollowers.func1(0x0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:147 +0x6d
+created by 6.824/raft.(*Term).updateFollowers
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:146 +0x1fb
+
+goroutine 217 [chan receive]:
+6.824/labrpc.(*ClientEnd).Call(0xc00006bb20, {0x727245, 0x12}, {0x6d5520, 0xc0002b8500}, {0x6d5560, 0xc00028dec0})
+	/home/abdullahmeo11/code/MIT/6.824/src/labrpc/labrpc.go:123 +0x385
+6.824/raft.(*Peers).Call(0xc000292b40, {0x727245, 0x12}, 0x1, {0x6d5520, 0xc0002b8500}, {0x6d5560, 0xc00028dec0})
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:21 +0x166
+6.824/raft.(*Peers).AppendEntries(0xba?, 0xc00007d800?, 0xc0002b8500, 0xc0002b2f00?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:67 +0xfb
+6.824/raft.(*Term).updateFollowers.func1(0x0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:147 +0x6d
+created by 6.824/raft.(*Term).updateFollowers
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:146 +0x1fb
+
+goroutine 222 [chan receive]:
+6.824/labrpc.(*ClientEnd).Call(0xc00006bb40, {0x727245, 0x12}, {0x6d5520, 0xc0002b8780}, {0x6d5560, 0xc00028dfe0})
+	/home/abdullahmeo11/code/MIT/6.824/src/labrpc/labrpc.go:123 +0x385
+6.824/raft.(*Peers).Call(0xc000292b40, {0x727245, 0x12}, 0x2, {0x6d5520, 0xc0002b8780}, {0x6d5560, 0xc00028dfe0})
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:21 +0x166
+6.824/raft.(*Peers).AppendEntries(0x0?, 0x0?, 0xc0002b8780, 0x0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:67 +0xfb
+6.824/raft.(*Term).updateFollowers.func1(0x0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:147 +0x6d
+created by 6.824/raft.(*Term).updateFollowers
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:146 +0x1fb
+
+goroutine 275 [chan receive]:
+6.824/labrpc.(*ClientEnd).Call(0xc00006bb40, {0x727245, 0x12}, {0x6d5520, 0xc0002b8cc0}, {0x6d5560, 0xc0002c0280})
+	/home/abdullahmeo11/code/MIT/6.824/src/labrpc/labrpc.go:123 +0x385
+6.824/raft.(*Peers).Call(0xc000292b40, {0x727245, 0x12}, 0x2, {0x6d5520, 0xc0002b8cc0}, {0x6d5560, 0xc0002c0280})
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:21 +0x166
+6.824/raft.(*Peers).AppendEntries(0xc000238f88?, 0x437bdd?, 0xc0002b8cc0, 0xc000238fb0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:67 +0xfb
+6.824/raft.(*Term).updateFollowers.func1(0x0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:147 +0x6d
+created by 6.824/raft.(*Term).updateFollowers
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:146 +0x1fb
+
+goroutine 261 [chan receive]:
+6.824/labrpc.(*ClientEnd).Call(0xc00006bb40, {0x727245, 0x12}, {0x6d5520, 0xc000276c00}, {0x6d5560, 0xc000261c10})
+	/home/abdullahmeo11/code/MIT/6.824/src/labrpc/labrpc.go:123 +0x385
+6.824/raft.(*Peers).Call(0xc000292b40, {0x727245, 0x12}, 0x2, {0x6d5520, 0xc000276c00}, {0x6d5560, 0xc000261c10})
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:21 +0x166
+6.824/raft.(*Peers).AppendEntries(0xc00023c788?, 0x437bdd?, 0xc000276c00, 0xc00023c7b0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:67 +0xfb
+6.824/raft.(*Term).updateFollowers.func1(0x0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:147 +0x6d
+created by 6.824/raft.(*Term).updateFollowers
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:146 +0x1fb
+
+goroutine 278 [chan receive]:
+6.824/labrpc.(*ClientEnd).Call(0xc00006bb00, {0x727245, 0x12}, {0x6d5520, 0xc0002b9000}, {0x6d5560, 0xc0002c0430})
+	/home/abdullahmeo11/code/MIT/6.824/src/labrpc/labrpc.go:123 +0x385
+6.824/raft.(*Peers).Call(0xc000292b40, {0x727245, 0x12}, 0x0, {0x6d5520, 0xc0002b9000}, {0x6d5560, 0xc0002c0430})
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:21 +0x166
+6.824/raft.(*Peers).AppendEntries(0x107?, 0xc00007db60?, 0xc0002b9000, 0xc0002b34a0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:67 +0xfb
+6.824/raft.(*Term).updateFollowers.func1(0x0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:147 +0x6d
+created by 6.824/raft.(*Term).updateFollowers
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:146 +0x1fb
+
+goroutine 279 [chan receive]:
+6.824/labrpc.(*ClientEnd).Call(0xc00006bb20, {0x727245, 0x12}, {0x6d5520, 0xc0002b9040}, {0x6d5560, 0xc0002c0440})
+	/home/abdullahmeo11/code/MIT/6.824/src/labrpc/labrpc.go:123 +0x385
+6.824/raft.(*Peers).Call(0xc000292b40, {0x727245, 0x12}, 0x1, {0x6d5520, 0xc0002b9040}, {0x6d5560, 0xc0002c0440})
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:21 +0x166
+6.824/raft.(*Peers).AppendEntries(0x0?, 0x0?, 0xc0002b9040, 0x0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:67 +0xfb
+6.824/raft.(*Term).updateFollowers.func1(0x0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:147 +0x6d
+created by 6.824/raft.(*Term).updateFollowers
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:146 +0x1fb
+
+goroutine 292 [chan receive]:
+6.824/labrpc.(*ClientEnd).Call(0xc00006bb00, {0x727245, 0x12}, {0x6d5520, 0xc00030afc0}, {0x6d5560, 0xc00030c840})
+	/home/abdullahmeo11/code/MIT/6.824/src/labrpc/labrpc.go:123 +0x385
+6.824/raft.(*Peers).Call(0xc000292b40, {0x727245, 0x12}, 0x0, {0x6d5520, 0xc00030afc0}, {0x6d5560, 0xc00030c840})
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:21 +0x166
+6.824/raft.(*Peers).AppendEntries(0x0?, 0x0?, 0xc00030afc0, 0x0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:67 +0xfb
+6.824/raft.(*Term).updateFollowers.func1(0x0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:147 +0x6d
+created by 6.824/raft.(*Term).updateFollowers
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:146 +0x1fb
+
+goroutine 299 [chan receive]:
+6.824/labrpc.(*ClientEnd).Call(0xc00006bb20, {0x727245, 0x12}, {0x6d5520, 0xc00030b240}, {0x6d5560, 0xc00030c950})
+	/home/abdullahmeo11/code/MIT/6.824/src/labrpc/labrpc.go:123 +0x385
+6.824/raft.(*Peers).Call(0xc000292b40, {0x727245, 0x12}, 0x1, {0x6d5520, 0xc00030b240}, {0x6d5560, 0xc00030c950})
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:21 +0x166
+6.824/raft.(*Peers).AppendEntries(0x0?, 0x0?, 0xc00030b240, 0x0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:67 +0xfb
+6.824/raft.(*Term).updateFollowers.func1(0x0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:147 +0x6d
+created by 6.824/raft.(*Term).updateFollowers
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:146 +0x1fb
+
+goroutine 300 [chan receive]:
+6.824/labrpc.(*ClientEnd).Call(0xc00006bb40, {0x727245, 0x12}, {0x6d5520, 0xc00030b280}, {0x6d5560, 0xc00030c960})
+	/home/abdullahmeo11/code/MIT/6.824/src/labrpc/labrpc.go:123 +0x385
+6.824/raft.(*Peers).Call(0xc000292b40, {0x727245, 0x12}, 0x2, {0x6d5520, 0xc00030b280}, {0x6d5560, 0xc00030c960})
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:21 +0x166
+6.824/raft.(*Peers).AppendEntries(0x0?, 0x0?, 0xc00030b280, 0x0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/peers.go:67 +0xfb
+6.824/raft.(*Term).updateFollowers.func1(0x0?)
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:147 +0x6d
+created by 6.824/raft.(*Term).updateFollowers
+	/home/abdullahmeo11/code/MIT/6.824/src/raft/term.go:146 +0x1fb
+exit status 2
+FAIL	6.824/raft	10.442s

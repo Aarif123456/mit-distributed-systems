@@ -25,6 +25,8 @@ import (
 	"6.824/labrpc"
 )
 
+const SnapShotInterval = 10
+
 var _ncpuOnce sync.Once
 
 type config struct {
@@ -94,7 +96,7 @@ func makeConfig(t *testing.T, n int, unreliable, snapshot bool) *config {
 }
 
 // shut down a Raft server but save its persistent state.
-func (cfg *config) crash1(i int) {
+func (cfg *config) crash(i int) {
 	cfg.disconnect(i)
 	cfg.net.DeleteServer(i) // disable client connections to the server.
 
@@ -164,15 +166,13 @@ func (cfg *config) applier(i int, applyCh <-chan ApplyMsg) {
 			errMsg = fmt.Sprintf("server %v apply out of order %v", i, m.CommandIndex)
 		}
 		if errMsg != "" {
-			log.Fatalf("apply error: %v\n", errMsg)
 			cfg.applyErr[i] = errMsg
+			log.Fatalf("apply error: %v\n", errMsg)
 			// keep reading after error so that Raft doesn't block
 			// holding locks...
 		}
 	}
 }
-
-const SnapShotInterval = 10
 
 // periodically snapshot raft state
 func (cfg *config) applierSnap(i int, applyCh <-chan ApplyMsg) {
@@ -208,8 +208,8 @@ func (cfg *config) applierSnap(i int, applyCh <-chan ApplyMsg) {
 				errMsg = fmt.Sprintf("server %v apply out of order %v", i, m.CommandIndex)
 			}
 			if errMsg != "" {
-				log.Fatalf("apply error: %v\n", errMsg)
 				cfg.applyErr[i] = errMsg
+				log.Fatalf("apply error: %v\n", errMsg)
 				// keep reading after error so that Raft doesn't block
 				// holding locks...
 			}
@@ -241,7 +241,7 @@ func (cfg *config) applierSnap(i int, applyCh <-chan ApplyMsg) {
 // this server. since we cannot really kill it.
 //
 func (cfg *config) start1(i int, applier func(int, <-chan ApplyMsg)) {
-	cfg.crash1(i)
+	cfg.crash(i)
 
 	// a fresh set of outgoing ClientEnd names.
 	// so that old crashed instance's ClientEnds can't send.
@@ -393,7 +393,7 @@ func (cfg *config) checkOneLeader() int {
 		lastTermWithLeader := -1
 		for term, leaders := range leaders {
 			if len(leaders) > 1 {
-				cfg.t.Fatalf("term %d has %d (>1) leaders", term, len(leaders))
+				panic(fmt.Sprintf("term %d has %d (>1) leaders", term, len(leaders)))
 			}
 			if term > lastTermWithLeader {
 				lastTermWithLeader = term
@@ -404,7 +404,7 @@ func (cfg *config) checkOneLeader() int {
 			return leaders[lastTermWithLeader][0]
 		}
 	}
-	cfg.t.Fatalf("expected one leader, got none")
+	panic(fmt.Sprintf("expected one leader, got none"))
 	return -1
 }
 
@@ -417,7 +417,7 @@ func (cfg *config) checkTerms() int {
 			if term == -1 {
 				term = xterm
 			} else if term != xterm {
-				cfg.t.Fatalf("servers disagree on term")
+				panic(fmt.Sprintf("servers disagree on term"))
 			}
 		}
 	}
@@ -430,16 +430,14 @@ func (cfg *config) checkNoLeader() {
 		if cfg.connected[i] {
 			_, isLeader := cfg.rafts[i].GetState()
 			if isLeader {
-				cfg.t.Fatalf("expected no leader, but %v claims to be leader", i)
+				panic(fmt.Sprintf("expected no leader, but (%v, %v) claims to be leader for term %d", i, cfg.rafts[i].me, cfg.rafts[i].term.Num()))
 			}
 		}
 	}
 }
 
 // how many servers think a log entry is committed?
-func (cfg *config) nCommitted(index int) (int, any) {
-	count := 0
-	var cmd any
+func (cfg *config) nCommitted(index int) (count int, cmd any) {
 	for i := 0; i < len(cfg.rafts); i++ {
 		if cfg.applyErr[i] != "" {
 			cfg.t.Fatal(cfg.applyErr[i])
@@ -458,8 +456,7 @@ func (cfg *config) nCommitted(index int) (int, any) {
 		}
 
 		if count > 0 && cmd != cmd1 {
-			cfg.t.Fatalf("committed values do not match: index %v, %v, %v\n",
-				index, cmd, cmd1)
+			panic(fmt.Sprintf("committed values do not match: index %v, %v, %v\n", index, cmd, cmd1))
 		}
 		count++
 		cmd = cmd1
@@ -493,8 +490,7 @@ func (cfg *config) wait(index, n, startTerm int) any {
 	}
 	nd, cmd := cfg.nCommitted(index)
 	if nd < n {
-		cfg.t.Fatalf("only %d decided for index %d; wanted %d\n",
-			nd, index, n)
+		panic(fmt.Sprintf("only %d decided for index %d; wanted %d\n", nd, index, n))
 	}
 	return cmd
 }
@@ -554,13 +550,13 @@ func (cfg *config) one(cmd any, expectedServers int, retry bool) int {
 				time.Sleep(20 * time.Millisecond)
 			}
 			if !retry {
-				cfg.t.Fatalf("one(%v) failed to reach agreement", cmd)
+				panic(fmt.Sprintf("one(%v) failed to reach agreement", cmd))
 			}
 		} else {
 			time.Sleep(50 * time.Millisecond)
 		}
 	}
-	cfg.t.Fatalf("one(%v) failed to reach agreement", cmd)
+	panic(fmt.Sprintf("one(%v) failed to reach agreement", cmd))
 	return -1
 }
 

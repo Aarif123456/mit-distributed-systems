@@ -9,31 +9,32 @@ import (
 )
 
 const (
-	_minBroadcastTime = 500 * time.Nanosecond
-	_maxBroadcastTime = 20 * time.Millisecond
+	// Tester doesn't allow us to send more than 10 beats/second
+	_minBroadcastTime = 150 * time.Millisecond
+	_maxBroadcastTime = 250 * time.Millisecond
 )
 
 type Term struct {
-	mu          sync.Mutex
+	mu          sync.RWMutex
 	num         int
 	votedFor    *int
 	termElected *int
 }
 
-func (t *Term) Update(termNum int, votedFor *int) bool {
+func (t *Term) Update(newNum int, votedFor *int) bool {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
 	oldNum := t.num
-	if oldNum > termNum {
+	if oldNum > newNum {
 		return false
 	}
 
-	// (curTerm <= newTerm) ==> we can update
-	t.num = termNum
+	// (oldNum <= newNum) ==> we can update
+	t.num = newNum
 
 	// Our term got updated, so we get rid of the old vote
-	if oldNum < termNum {
+	if oldNum < newNum {
 		t.votedFor = nil
 		t.votedFor = votedFor
 		return true
@@ -55,30 +56,30 @@ func (t *Term) Update(termNum int, votedFor *int) bool {
 }
 
 func (t *Term) Num() int {
-	t.mu.Lock()
-	defer t.mu.Unlock()
+	t.mu.RLock()
+	defer t.mu.RUnlock()
 
 	return t.num
 }
 
 func (t *Term) VotedFor() *int {
-	t.mu.Lock()
-	defer t.mu.Unlock()
+	t.mu.RLock()
+	defer t.mu.RUnlock()
 
 	return t.votedFor
 }
 
 func (t *Term) IsLeader() bool {
-	t.mu.Lock()
-	defer t.mu.Unlock()
+	t.mu.RLock()
+	defer t.mu.RUnlock()
 
 	isLeader := t.termElected != nil && *t.termElected == t.num
 	return isLeader
 }
 
 func (t *Term) Info() (num int, votedFor *int, isLeader bool) {
-	t.mu.Lock()
-	defer t.mu.Unlock()
+	t.mu.RLock()
+	defer t.mu.RUnlock()
 
 	isLeader = t.termElected != nil && *t.termElected == t.num
 	return t.num, t.votedFor, isLeader
@@ -87,13 +88,13 @@ func (t *Term) Info() (num int, votedFor *int, isLeader bool) {
 func (t *Term) BecomeLeader(
 	me int,
 	peers *Peers,
-	termNum int,
+	termElected int,
 	logs *Logs,
 ) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
-	if t.num != termNum {
+	if t.num != termElected {
 		return
 	}
 
@@ -101,15 +102,15 @@ func (t *Term) BecomeLeader(
 		return
 	}
 
-	t.termElected = &termNum
+	t.termElected = &termElected
 
-	go t.updateFollowers(me, peers, termNum, logs)
+	go t.updateFollowers(me, peers, termElected, logs)
 }
 
 func (t *Term) updateFollowers(
 	me int,
 	peers *Peers,
-	termNum int,
+	termElected int,
 	logs *Logs,
 ) {
 	n := peers.Len()
@@ -127,12 +128,12 @@ func (t *Term) updateFollowers(
 	heartBeatWait := _minBroadcastTime + time.Duration(randWait)
 	ticker := time.NewTicker(heartBeatWait)
 	// while we are in the term we got elected
-	for t.Num() == termNum {
+	for t.Num() == termElected {
 		for i := 0; i < n; i++ {
 			logIndex := nextIndex[i]
 			prevLog, _ := logs.LogAt(logIndex)
 			args := &AppendEntriesArgs{
-				Term:         termNum,
+				Term:         termElected,
 				LeaderID:     me,
 				PrevLogIndex: logIndex,
 				PrevLogTerm:  prevLog.term,
@@ -144,10 +145,20 @@ func (t *Term) updateFollowers(
 			reply := &AppendEntriesReply{}
 			go func(i int) {
 				peers.AppendEntries(i, args, reply)
-				t.Update(reply.Term, nil)
+				if reply.Term > termElected {
+					t.Update(reply.Term, nil)
+				}
 			}(i)
 		}
 
 		<-ticker.C
 	}
+}
+
+func (t *Term) Kill() {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+
+	t.termElected = nil
+	t.num = 0
 }

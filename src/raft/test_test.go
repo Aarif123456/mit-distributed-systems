@@ -9,7 +9,7 @@ package raft
 //
 
 import (
-	"fmt"
+	"log"
 	"math/rand"
 	"sync"
 	"sync/atomic"
@@ -46,7 +46,7 @@ func TestInitialElection2A(t *testing.T) {
 	time.Sleep(2 * RaftElectionTimeout)
 
 	if term2 := cfg.checkTerms(); term1 != term2 {
-		fmt.Println("warning: term changed even though there were no failures")
+		log.Println("warning: term changed even though there were no failures")
 	}
 
 	// there should still be a leader.
@@ -64,32 +64,32 @@ func TestReElection2A(t *testing.T) {
 	leader1 := cfg.checkOneLeader()
 
 	// if the leader disconnects, a new one should be elected.
+	log.Println("Disconnect leader")
 	cfg.disconnect(leader1)
-	fmt.Println("Disconnect leader")
 	cfg.checkOneLeader()
 
 	// if the old leader rejoins, that shouldn't
 	// disturb the new leader.
+	log.Println("Old leader joins")
 	cfg.connect(leader1)
-	fmt.Println("Old leader joins")
 	leader2 := cfg.checkOneLeader()
 
 	// if there's no quorum, no leader should
 	// be elected.
+	log.Println("No quorum means no leader")
 	cfg.disconnect(leader2)
 	cfg.disconnect((leader2 + 1) % servers)
 	time.Sleep(2 * RaftElectionTimeout)
-	fmt.Println("No quorum means no leader")
 	cfg.checkNoLeader()
 
 	// if a quorum arises, it should elect a leader.
+	log.Println("Quorum arises means one leader")
 	cfg.connect((leader2 + 1) % servers)
-	fmt.Println("Quorum arises means one leader")
 	cfg.checkOneLeader()
 
 	// re-join of last node shouldn't prevent leader from existing.
+	log.Println("Rejoin final node")
 	cfg.connect(leader2)
-	fmt.Println("Rejoin final node")
 	cfg.checkOneLeader()
 
 	cfg.end()
@@ -698,8 +698,8 @@ func TestPersist32C(t *testing.T) {
 
 	cfg.one(102, 2, true)
 
-	cfg.crash1((leader + 0) % servers)
-	cfg.crash1((leader + 1) % servers)
+	cfg.crash((leader + 0) % servers)
+	cfg.crash((leader + 1) % servers)
 	cfg.connect((leader + 2) % servers)
 	cfg.start1((leader+0)%servers, cfg.applier)
 	cfg.connect((leader + 0) % servers)
@@ -754,7 +754,7 @@ func TestFigure82C(t *testing.T) {
 		}
 
 		if leader != -1 {
-			cfg.crash1(leader)
+			cfg.crash(leader)
 			nup--
 		}
 
@@ -954,7 +954,7 @@ func internalChurn(t *testing.T, unreliable bool) {
 		if (rand.Int() % 1000) < 200 {
 			i := rand.Int() % servers
 			if cfg.rafts[i] != nil {
-				cfg.crash1(i)
+				cfg.crash(i)
 			}
 		}
 
@@ -1048,7 +1048,7 @@ func snapcommon(t *testing.T, name string, disconnect, reliable, crash bool) {
 			cfg.one(rand.Int(), servers-1, true)
 		}
 		if crash {
-			cfg.crash1(victim)
+			cfg.crash(victim)
 			cfg.one(rand.Int(), servers-1, true)
 		}
 		// send enough to get a snapshot

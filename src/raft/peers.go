@@ -3,6 +3,7 @@
 package raft
 
 import (
+	"log"
 	"sync"
 
 	"6.824/labrpc"
@@ -55,9 +56,13 @@ func (p *Peers) Len() int {
 // the struct itself.
 //
 func (p *Peers) SendRequestVote(i int, args *RequestVoteArgs, reply *RequestVoteReply) bool {
+	log.Printf("%d is sendingVote request to %d\n", args.RequesterID, i)
+
 	return p.Call("Raft.RequestVote", i, args, reply)
 }
 
 func (p *Peers) AppendEntries(i int, args *AppendEntriesArgs, reply *AppendEntriesReply) bool {
+	log.Printf("%d sends heartbeat request to %d\n", args.LeaderID, i)
+
 	return p.Call("Raft.AppendEntries", i, args, reply)
 }

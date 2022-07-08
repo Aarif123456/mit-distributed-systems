@@ -8,7 +8,7 @@ import (
 
 type (
 	Logs struct {
-		mu      sync.Mutex
+		mu      sync.RWMutex
 		applied []Log
 		// lastApplied we can derive from applied
 		commitIndex int
@@ -46,8 +46,8 @@ func (l *Logs) AreLogUpToDate(lastLogIndex, lastLogTerm int) bool {
 }
 
 func (l *Logs) LastAppliedInfo() (curLogIndex, curLogTerm int) {
-	l.mu.Lock()
-	defer l.mu.Unlock()
+	l.mu.RLock()
+	defer l.mu.RUnlock()
 
 	curLogIndex = l.commitIndex
 	curLogTerm = -1
@@ -59,8 +59,8 @@ func (l *Logs) LastAppliedInfo() (curLogIndex, curLogTerm int) {
 }
 
 func (l *Logs) LogAt(i int) (Log, bool) {
-	l.mu.Lock()
-	defer l.mu.Unlock()
+	l.mu.RLock()
+	defer l.mu.RUnlock()
 
 	if len(l.applied) == 0 {
 		return Log{}, false
@@ -72,12 +72,12 @@ func (l *Logs) LogAt(i int) (Log, bool) {
 func (l *Logs) IsLogExactMatch(prevLogIndex, prevLogTerm int) bool {
 	logTerm, exists := l.getLoggedInfoFor(prevLogIndex)
 
-	return exists && logTerm == prevLogTerm
+	return !exists || logTerm == prevLogTerm
 }
 
 func (l *Logs) getLoggedInfoFor(logIndex int) (int, bool) {
-	l.mu.Lock()
-	defer l.mu.Unlock()
+	l.mu.RLock()
+	defer l.mu.RUnlock()
 
 	if logIndex < 0 || logIndex >= len(l.applied) {
 		return 0, false
@@ -87,15 +87,15 @@ func (l *Logs) getLoggedInfoFor(logIndex int) (int, bool) {
 }
 
 func (l *Logs) NumApplied() int {
-	l.mu.Lock()
-	defer l.mu.Unlock()
+	l.mu.RLock()
+	defer l.mu.RUnlock()
 
 	return len(l.applied) - 1
 }
 
 func (l *Logs) CommitIndex() int {
-	l.mu.Lock()
-	defer l.mu.Unlock()
+	l.mu.RLock()
+	defer l.mu.RUnlock()
 
 	return l.commitIndex
 }

@@ -1,3 +1,5 @@
+// Abdullah Arif (Modified)
+
 package raft
 
 //
@@ -29,8 +31,8 @@ import (
 )
 
 const (
-	_minWaitTime = 250 * time.Millisecond
-	_maxWaitTime = 400 * time.Millisecond
+	_minWaitTime = 800 * time.Millisecond
+	_maxWaitTime = 1500 * time.Millisecond
 )
 
 //
@@ -92,6 +94,9 @@ type (
 func Make(peers []*labrpc.ClientEnd, me int,
 	persister *Persister, applyCh chan ApplyMsg,
 ) *Raft {
+	// TODO: remove
+	close(applyCh)
+
 	rf := &Raft{
 		peers: &Peers{
 			clients: peers,
@@ -218,7 +223,9 @@ type (
 
 // RequestVote RPC handler.
 func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
-	// log.Printf("%d asked %d to vote for them!\n", args.RequesterID, rf.me)
+	log.Printf("%d asked %d to vote for them!\n", args.RequesterID, rf.me)
+	// rf.mu.Lock()
+	// defer rf.mu.Unlock()
 
 	curTermNum, curTermVotedFor, _ := rf.term.Info()
 
@@ -260,16 +267,19 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 	}
 
 	if isOurLeader := rf.term.Update(args.Term, &args.LeaderID); !isOurLeader {
+		log.Printf("%d is not the leader for %d, %d is\n", args.LeaderID, rf.me, rf.term.VotedFor())
 		return
 	}
 
 	rf.resetTimeout()
 
 	if !rf.logs.IsLogExactMatch(args.PrevLogIndex, args.PrevLogTerm) {
+		log.Printf("%d tried to get heartbeat from %d, but logs were out of date\n", args.LeaderID, rf.me)
 		// Log must be an exact match or we can't update
 		return
 	}
 
+	// Most logs will empty s it's more efficient to leave this as nil
 	var pendingLogs []Log
 	for _, entry := range args.Entries {
 		pendingLogs = append(pendingLogs, Log{
@@ -329,6 +339,7 @@ func (rf *Raft) Start(command any) (index, term int, isLeader bool) {
 //
 func (rf *Raft) Kill() {
 	atomic.StoreInt32(&rf.dead, 1)
+	rf.term.Kill()
 }
 
 func (rf *Raft) killed() bool {
@@ -341,7 +352,6 @@ func (rf *Raft) ticker() {
 	for !rf.killed() {
 		randWait := rand.Int63n(int64(_maxWaitTime - _minWaitTime))
 		electionTimeout := _minWaitTime + time.Duration(randWait)
-
 		select {
 		case <-time.After(electionTimeout):
 			if rf.term.IsLeader() {
@@ -355,22 +365,20 @@ func (rf *Raft) ticker() {
 }
 
 func (rf *Raft) becomeCandidate() {
-	myTermNum, votedFor, isLeader := rf.term.Info()
-	if votedFor != &rf.me {
-		// we only increment when we first start at an election
-		myTermNum++
-	}
+	// rf.mu.Lock()
+	// defer rf.mu.Unlock()
+	// TODO: make term store isCandidate - if we get an updated for votedFor - while we are a candidate then we update and stop being a candidate
+	// We might two separate update- once for Request Vote and one for heart beat
 
-	if updated := rf.term.Update(myTermNum, &rf.me); !updated {
-		// If we already voted for someone else we are done
-		return
-	}
+	myTermNum, _, isLeader := rf.term.Info()
+
+	myTermNum++
 
 	if isLeader {
 		return
 	}
-
 	rf.resetTimeout()
+
 	curLogIndex, curLogTerm := rf.logs.LastAppliedInfo()
 
 	log.Printf("%d is trying to become a leader for term %d\n", rf.me, myTermNum)
@@ -378,17 +386,22 @@ func (rf *Raft) becomeCandidate() {
 	var (
 		wg            sync.WaitGroup
 		gotVotes      int64 = 1
-		requiredVotes       = int64(rf.peers.Len()) / 2
+		requiredVotes       = (int64(rf.peers.Len()) / 2)
 	)
 
 	for i := 0; i < rf.peers.Len(); i++ {
-		if i == rf.me {
-			// we already voted for our selves
-			continue
+		if rf.term.Num() >= myTermNum {
+			// term is outdated we are done
+			return
 		}
 
 		if atomic.LoadInt64(&gotVotes) > requiredVotes {
 			// If we got enough to win finish early
+			break
+		}
+
+		if i == rf.me {
+			// we already voted for our selves
 			continue
 		}
 
@@ -410,18 +423,23 @@ func (rf *Raft) becomeCandidate() {
 			}
 
 			if reply.Term > myTermNum && rf.term.Update(reply.Term, nil) {
-				log.Printf("%d's term is outdated\n", rf.me)
 				return
 			}
 
-			log.Printf("%d got a vote from %d!\n", rf.me, i)
 			atomic.AddInt64(&gotVotes, 1)
 		}(i)
 	}
 
 	wg.Wait()
 
-	if gotVotes > requiredVotes && myTermNum == rf.term.Num() {
+	if updated := rf.term.Update(myTermNum, &rf.me); !updated {
+		// If we already voted for someone else we are done
+		return
+	}
+
+	log.Printf("requiredVotes %d, gotVotes%d\n", requiredVotes, gotVotes)
+
+	if gotVotes > requiredVotes {
 		log.Printf("%d Became a leader for term %d!\n", rf.me, myTermNum)
 		rf.term.BecomeLeader(rf.me, rf.peers, myTermNum, rf.logs)
 	}
