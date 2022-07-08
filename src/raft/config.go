@@ -49,6 +49,8 @@ type config struct {
 }
 
 func makeConfig(t *testing.T, n int, unreliable, snapshot bool) *config {
+	t.Helper()
+
 	_ncpuOnce.Do(func() {
 		if runtime.NumCPU() < 2 {
 			fmt.Printf("warning: only one CPU, which may conceal locking bugs\n")
@@ -107,8 +109,7 @@ func (cfg *config) crash1(i int) {
 		cfg.saved[i] = cfg.saved[i].Copy()
 	}
 
-	rf := cfg.rafts[i]
-	if rf != nil {
+	if rf := cfg.rafts[i]; rf != nil {
 		cfg.mu.Unlock()
 		rf.Kill()
 		cfg.mu.Lock()
@@ -217,7 +218,9 @@ func (cfg *config) applierSnap(i int, applyCh <-chan ApplyMsg) {
 				w := new(bytes.Buffer)
 				e := labgob.NewEncoder(w)
 				v := m.Command
-				e.Encode(v)
+				if err := e.Encode(v); err != nil {
+					panic(err)
+				}
 				cfg.rafts[i].Snapshot(m.CommandIndex, w.Bytes())
 			}
 		default:
@@ -461,6 +464,7 @@ func (cfg *config) nCommitted(index int) (int, any) {
 		count++
 		cmd = cmd1
 	}
+
 	return count, cmd
 }
 
@@ -606,10 +610,12 @@ func (cfg *config) LogSize() int {
 
 func randstring(n int) string {
 	b := make([]byte, 2*n)
-	crand.Read(b)
+	if _, err := crand.Read(b); err != nil {
+		panic(err)
+	}
 	s := base64.URLEncoding.EncodeToString(b)
 
-	return s[0:n]
+	return s[:n]
 }
 
 func makeSeed() int64 {

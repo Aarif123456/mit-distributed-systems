@@ -1,17 +1,20 @@
 linters:
   enable-all: true
   disable: 
+    - contextcheck
+    - cyclop
     - depguard
     - dupl
-    - godot
-    - contextcheck
+    - execinquery
     - exhaustive
     - exhaustivestruct 
     - exhaustruct
-    - funlen
     - forbidigo
+    - funlen
     - gochecknoglobals 
     - gocognit
+    - gocyclo
+    - godot
     - godox 
     - goerr113 
     - gofmt 
@@ -24,9 +27,10 @@ linters:
     - lll
     - maligned 
     - misspell 
-    - nlreturn 
     - nestif
     - nilnil 
+    - nlreturn 
+    - nonamedreturns
     - paralleltest 
     - prealloc
     - scopelint 
@@ -36,8 +40,6 @@ linters:
     - varnamelen
     - wrapcheck 
     - wsl 
-    - nonamedreturns
-    - execinquery
     # - gocritic # problems with generics
 
 issues:
@@ -136,6 +138,8 @@ linters-settings:
         disabled: true
       - name: file-header
         disabled: true
+      - name: flag-parameter
+        disabled: true
       - name: function-length
         disabled: true
       - name: function-result-limit
@@ -150,6 +154,8 @@ linters-settings:
       - name: package-comments 
         disabled: true
       - name: struct-tag # n/a
+        disabled: true
+      - name: unreachable-code
         disabled: true
       - name: unexported-return # too restrictive
         disabled: true

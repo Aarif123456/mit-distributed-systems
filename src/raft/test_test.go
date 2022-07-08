@@ -9,6 +9,7 @@ package raft
 //
 
 import (
+	"fmt"
 	"math/rand"
 	"sync"
 	"sync/atomic"
@@ -18,7 +19,10 @@ import (
 
 // The tester generously allows solutions to complete elections in one second
 // (much more than the paper's range of timeouts).
-const RaftElectionTimeout = 1000 * time.Millisecond
+const (
+	RaftElectionTimeout = 1000 * time.Millisecond
+	MaxLogSize          = 2000
+)
 
 func TestInitialElection2A(t *testing.T) {
 	servers := 3
@@ -40,9 +44,9 @@ func TestInitialElection2A(t *testing.T) {
 
 	// does the leader+term stay the same if there is no network failure?
 	time.Sleep(2 * RaftElectionTimeout)
-	term2 := cfg.checkTerms()
-	if term1 != term2 {
-		t.Log("warning: term changed even though there were no failures")
+
+	if term2 := cfg.checkTerms(); term1 != term2 {
+		fmt.Println("warning: term changed even though there were no failures")
 	}
 
 	// there should still be a leader.
@@ -57,16 +61,17 @@ func TestReElection2A(t *testing.T) {
 	defer cfg.cleanup()
 
 	cfg.begin("Test (2A): election after network failure")
-
 	leader1 := cfg.checkOneLeader()
 
 	// if the leader disconnects, a new one should be elected.
 	cfg.disconnect(leader1)
+	fmt.Println("Disconnect leader")
 	cfg.checkOneLeader()
 
 	// if the old leader rejoins, that shouldn't
 	// disturb the new leader.
 	cfg.connect(leader1)
+	fmt.Println("Old leader joins")
 	leader2 := cfg.checkOneLeader()
 
 	// if there's no quorum, no leader should
@@ -74,14 +79,17 @@ func TestReElection2A(t *testing.T) {
 	cfg.disconnect(leader2)
 	cfg.disconnect((leader2 + 1) % servers)
 	time.Sleep(2 * RaftElectionTimeout)
+	fmt.Println("No quorum means no leader")
 	cfg.checkNoLeader()
 
 	// if a quorum arises, it should elect a leader.
 	cfg.connect((leader2 + 1) % servers)
+	fmt.Println("Quorum arises means one leader")
 	cfg.checkOneLeader()
 
 	// re-join of last node shouldn't prevent leader from existing.
 	cfg.connect(leader2)
+	fmt.Println("Rejoin final node")
 	cfg.checkOneLeader()
 
 	cfg.end()
@@ -158,7 +166,7 @@ func TestRPCBytes2B(t *testing.T) {
 	bytes0 := cfg.bytesTotal()
 
 	iters := 10
-	var sent int64 = 0
+	var sent int64
 	for index := 2; index < iters+2; index++ {
 		cmd := randstring(5000)
 		xindex := cfg.one(cmd, servers, false)
@@ -169,9 +177,8 @@ func TestRPCBytes2B(t *testing.T) {
 	}
 
 	bytes1 := cfg.bytesTotal()
-	got := bytes1 - bytes0
-	want := int64(servers) * sent
-	if got > want+50000 {
+
+	if got, want := bytes1-bytes0, int64(servers)*sent; got > want+50000 {
 		t.Fatalf("too many RPC bytes; got %v, want %v", got, want)
 	}
 
@@ -237,8 +244,7 @@ func TestFailNoAgree2B(t *testing.T) {
 
 	time.Sleep(2 * RaftElectionTimeout)
 
-	n, _ := cfg.nCommitted(index)
-	if n > 0 {
+	if n, _ := cfg.nCommitted(index); n > 0 {
 		t.Fatalf("%v committed but no majority", n)
 	}
 
@@ -481,14 +487,16 @@ func TestCount2B(t *testing.T) {
 
 	cfg.begin("Test (2B): RPC counts aren't too high")
 
-	rpcs := func() (n int) {
+	rpcs := func() int {
+		var n int
 		for j := 0; j < servers; j++ {
 			n += cfg.rpcCount(j)
 		}
-		return
+
+		return n
 	}
 
-	leader := cfg.checkOneLeader()
+	_ = cfg.checkOneLeader()
 
 	total1 := rpcs()
 
@@ -505,7 +513,7 @@ loop:
 			time.Sleep(3 * time.Second)
 		}
 
-		leader = cfg.checkOneLeader()
+		leader := cfg.checkOneLeader()
 		total1 = rpcs()
 
 		iters := 10
@@ -747,7 +755,7 @@ func TestFigure82C(t *testing.T) {
 
 		if leader != -1 {
 			cfg.crash1(leader)
-			nup -= 1
+			nup--
 		}
 
 		if nup < 3 {
@@ -755,7 +763,7 @@ func TestFigure82C(t *testing.T) {
 			if cfg.rafts[s] == nil {
 				cfg.start1(s, cfg.applier)
 				cfg.connect(s)
-				nup += 1
+				nup++
 			}
 		}
 	}
@@ -833,14 +841,14 @@ func TestFigure8Unreliable2C(t *testing.T) {
 
 		if leader != -1 && (rand.Int()%1000) < int(RaftElectionTimeout/time.Millisecond)/2 {
 			cfg.disconnect(leader)
-			nup -= 1
+			nup--
 		}
 
 		if nup < 3 {
 			s := rand.Int() % servers
 			if !cfg.connected[s] {
 				cfg.connect(s)
-				nup += 1
+				nup++
 			}
 		}
 	}
@@ -1012,9 +1020,9 @@ func TestUnreliableChurn2C(t *testing.T) {
 	internalChurn(t, true)
 }
 
-const MAXLOGSIZE = 2000
-
 func snapcommon(t *testing.T, name string, disconnect, reliable, crash bool) {
+	t.Helper()
+
 	iters := 30
 	servers := 3
 	cfg := makeConfig(t, servers, !reliable, true)
@@ -1048,7 +1056,7 @@ func snapcommon(t *testing.T, name string, disconnect, reliable, crash bool) {
 		// let applier threads catch up with the Start()'s
 		cfg.one(rand.Int(), servers-1, true)
 
-		if cfg.LogSize() >= MAXLOGSIZE {
+		if cfg.LogSize() >= MaxLogSize {
 			cfg.t.Fatalf("Log size too large")
 		}
 		if disconnect {
