@@ -1,18 +1,31 @@
 package models
 
-import "6.824/porcupine"
-import "fmt"
-import "sort"
+import (
+	"fmt"
+	"sort"
 
-type KvInput struct {
-	Op    uint8 // 0 => get, 1 => put, 2 => append
-	Key   string
-	Value string
-}
+	"6.824/porcupine"
+)
 
-type KvOutput struct {
-	Value string
-}
+const (
+	Get Operation = iota
+	Put
+	Append
+)
+
+type (
+	Operation uint8
+
+	KvInput struct {
+		Op    Operation
+		Key   string
+		Value string
+	}
+
+	KvOutput struct {
+		Value string
+	}
+)
 
 var KvModel = porcupine.Model{
 	Partition: func(history []porcupine.Operation) [][]porcupine.Operation {
@@ -32,35 +45,35 @@ var KvModel = porcupine.Model{
 		}
 		return ret
 	},
-	Init: func() interface{} {
+	Init: func() any {
 		// note: we are modeling a single key's value here;
 		// we're partitioning by key, so this is okay
 		return ""
 	},
-	Step: func(state, input, output interface{}) (bool, interface{}) {
+	Step: func(state, input, output any) (bool, any) {
 		inp := input.(KvInput)
 		out := output.(KvOutput)
 		st := state.(string)
-		if inp.Op == 0 {
-			// get
+		switch inp.Op {
+		case Get:
 			return out.Value == st, state
-		} else if inp.Op == 1 {
-			// put
+		case Put:
 			return true, inp.Value
-		} else {
-			// append
+		case Append:
 			return true, (st + inp.Value)
+		default:
+			panic("Unrecognized operation")
 		}
 	},
-	DescribeOperation: func(input, output interface{}) string {
+	DescribeOperation: func(input, output any) string {
 		inp := input.(KvInput)
 		out := output.(KvOutput)
 		switch inp.Op {
-		case 0:
+		case Get:
 			return fmt.Sprintf("get('%s') -> '%s'", inp.Key, out.Value)
-		case 1:
+		case Put:
 			return fmt.Sprintf("put('%s', '%s')", inp.Key, inp.Value)
-		case 2:
+		case Append:
 			return fmt.Sprintf("append('%s', '%s')", inp.Key, inp.Value)
 		default:
 			return "<invalid>"

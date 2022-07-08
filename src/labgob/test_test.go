@@ -5,22 +5,24 @@ import (
 	"testing"
 )
 
-type T1 struct {
-	T1int0    int
-	T1int1    int
-	T1string0 string
-	T1string1 string
-}
+type (
+	T1 struct {
+		T1int0    int
+		T1int1    int
+		T1string0 string
+		T1string1 string
+	}
 
-type T2 struct {
-	T2slice []T1
-	T2map   map[int]*T1
-	T2t3    interface{}
-}
+	T2 struct {
+		T2slice []T1
+		T2map   map[int]*T1
+		T2t3    any
+	}
 
-type T3 struct {
-	T3int999 int
-}
+	T3 struct {
+		T3int999 int
+	}
+)
 
 //
 // test that we didn't break GOB.

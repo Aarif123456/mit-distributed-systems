@@ -14,6 +14,8 @@ type Coordinator struct {
 	reduceTm *taskManager[ReduceReply]
 }
 
+var errJobCancelled = errors.New("job cancelled")
+
 // MakeCoordinator creates a Coordinator.
 // main/mrcoordinator.go calls this function.
 // nReduce is the number of reduce tasks to use.
@@ -47,7 +49,7 @@ func MakeCoordinator(files []string, nReduce int) *Coordinator {
 	return c
 }
 
-func (c *Coordinator) Idle(args *IdleArgs, reply *IdleReply) error {
+func (c *Coordinator) Idle(_ *IdleArgs, reply *IdleReply) error {
 	switch {
 	case !c.mapTm.IsDone():
 		reply.Op = RunMap
@@ -60,32 +62,32 @@ func (c *Coordinator) Idle(args *IdleArgs, reply *IdleReply) error {
 	return nil
 }
 
-func (c *Coordinator) Map(args *MapArgs, reply *MapReply) error {
+func (c *Coordinator) Map(_ *MapArgs, reply *MapReply) error {
 	val, ok := c.mapTm.Run()
 	if !ok {
-		return errors.New("job cancelled")
+		return errJobCancelled
 	}
 
 	*reply = val
 	return nil
 }
 
-func (c *Coordinator) DoneMap(args *DoneMapArgs, reply *DoneMapReply) error {
+func (c *Coordinator) DoneMap(args *DoneMapArgs, _ *DoneMapReply) error {
 	c.mapTm.MarkDone(args.MapTaskID)
 	return nil
 }
 
-func (c *Coordinator) Reduce(args *ReduceArgs, reply *ReduceReply) error {
+func (c *Coordinator) Reduce(_ *ReduceArgs, reply *ReduceReply) error {
 	val, ok := c.reduceTm.Run()
 	if !ok {
-		return errors.New("job cancelled")
+		return errJobCancelled
 	}
 
 	*reply = val
 	return nil
 }
 
-func (c *Coordinator) DoneReduce(args *DoneReduceArgs, reply *DoneReduceReply) error {
+func (c *Coordinator) DoneReduce(args *DoneReduceArgs, _ *DoneReduceReply) error {
 	c.reduceTm.MarkDone(args.ReduceTaskID)
 	return nil
 }
@@ -98,7 +100,10 @@ func (c *Coordinator) Done() bool {
 
 // start a thread that listens for RPCs from worker.go
 func (c *Coordinator) server() {
-	rpc.Register(c)
+	if err := rpc.Register(c); err != nil {
+		log.Fatal("could not register server:", err)
+	}
+
 	rpc.HandleHTTP()
 	// lis, err := net.Listen("tcp", ":1234")
 	sockname := coordinatorSock()
@@ -108,5 +113,9 @@ func (c *Coordinator) server() {
 	if err != nil {
 		log.Fatal("listen error:", err)
 	}
-	go http.Serve(lis, nil)
+	go func() {
+		if err := http.Serve(lis, nil); err != nil {
+			log.Fatal("cannot serve traffic:", err)
+		}
+	}()
 }

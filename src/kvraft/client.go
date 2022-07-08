@@ -15,8 +15,8 @@ type Clerk struct {
 func nrand() int64 {
 	max := big.NewInt(int64(1) << 62)
 	bigx, _ := rand.Int(rand.Reader, max)
-	x := bigx.Int64()
-	return x
+
+	return bigx.Int64()
 }
 
 func MakeClerk(servers []*labrpc.ClientEnd) *Clerk {
@@ -39,7 +39,6 @@ func MakeClerk(servers []*labrpc.ClientEnd) *Clerk {
 // arguments. and reply must be passed as a pointer.
 //
 func (ck *Clerk) Get(key string) string {
-
 	// You will have to modify this function.
 	return ""
 }
@@ -54,13 +53,14 @@ func (ck *Clerk) Get(key string) string {
 // must match the declared types of the RPC handler function's
 // arguments. and reply must be passed as a pointer.
 //
-func (ck *Clerk) PutAppend(key string, value string, op string) {
+func (ck *Clerk) PutAppend(key, value, op string) {
 	// You will have to modify this function.
 }
 
-func (ck *Clerk) Put(key string, value string) {
+func (ck *Clerk) Put(key, value string) {
 	ck.PutAppend(key, value, "Put")
 }
-func (ck *Clerk) Append(key string, value string) {
+
+func (ck *Clerk) Append(key, value string) {
 	ck.PutAppend(key, value, "Append")
 }

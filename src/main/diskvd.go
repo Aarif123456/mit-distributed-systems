@@ -28,10 +28,10 @@ func usage() {
 }
 
 func main() {
-	var gid int64 = -1     // my replica group ID
-	masters := []string{}  // ports of shardmasters
-	replicas := []string{} // ports of servers in my replica group
-	me := -1               // my index in replicas[]
+	var gid int64 = -1    // my replica group ID
+	var masters []string  // ports of shardmasters
+	var replicas []string // ports of servers in my replica group
+	me := -1              // my index in replicas[]
 	unreliable := false
 	dir := "" // store persistent data here
 	restart := false

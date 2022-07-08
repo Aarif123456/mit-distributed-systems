@@ -31,7 +31,7 @@ func NewEncoder(w io.Writer) *LabEncoder {
 	return enc
 }
 
-func (enc *LabEncoder) Encode(e interface{}) error {
+func (enc *LabEncoder) Encode(e any) error {
 	checkValue(e)
 	return enc.gob.Encode(e)
 }
@@ -51,23 +51,23 @@ func NewDecoder(r io.Reader) *LabDecoder {
 	return dec
 }
 
-func (dec *LabDecoder) Decode(e interface{}) error {
+func (dec *LabDecoder) Decode(e any) error {
 	checkValue(e)
 	checkDefault(e)
 	return dec.gob.Decode(e)
 }
 
-func Register(value interface{}) {
+func Register(value any) {
 	checkValue(value)
 	gob.Register(value)
 }
 
-func RegisterName(name string, value interface{}) {
+func RegisterName(name string, value any) {
 	checkValue(value)
 	gob.RegisterName(name, value)
 }
 
-func checkValue(value interface{}) {
+func checkValue(value any) {
 	checkType(reflect.TypeOf(value))
 }
 
@@ -91,7 +91,7 @@ func checkType(t reflect.Type) {
 		for i := 0; i < t.NumField(); i++ {
 			f := t.Field(i)
 			rune, _ := utf8.DecodeRuneInString(f.Name)
-			if unicode.IsUpper(rune) == false {
+			if !unicode.IsUpper(rune) {
 				// ta da
 				fmt.Printf("labgob error: lower-case field %v of %v in RPC or persist/snapshot will break your Raft\n",
 					f.Name, t.Name())
@@ -121,7 +121,7 @@ func checkType(t reflect.Type) {
 // contains default values, GOB won't overwrite
 // the non-default value.
 //
-func checkDefault(value interface{}) {
+func checkDefault(value any) {
 	if value == nil {
 		return
 	}
@@ -158,7 +158,7 @@ func checkDefault1(value reflect.Value, depth int, name string) {
 		reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
 		reflect.Uintptr, reflect.Float32, reflect.Float64,
 		reflect.String:
-		if reflect.DeepEqual(reflect.Zero(t).Interface(), value.Interface()) == false {
+		if !reflect.DeepEqual(reflect.Zero(t).Interface(), value.Interface()) {
 			mu.Lock()
 			if errorCount < 1 {
 				what := name

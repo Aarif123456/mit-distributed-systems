@@ -1,24 +1,29 @@
 package labrpc
 
-import "testing"
-import "strconv"
-import "sync"
-import "runtime"
-import "time"
-import "fmt"
+import (
+	"fmt"
+	"runtime"
+	"strconv"
+	"sync"
+	"testing"
+	"time"
+)
 
-type JunkArgs struct {
-	X int
-}
-type JunkReply struct {
-	X string
-}
+type (
+	JunkServer struct {
+		mu   sync.Mutex
+		log1 []string
+		log2 []int
+	}
 
-type JunkServer struct {
-	mu   sync.Mutex
-	log1 []string
-	log2 []int
-}
+	JunkArgs struct {
+		X int
+	}
+
+	JunkReply struct {
+		X string
+	}
+)
 
 func (js *JunkServer) Handler1(args string, reply *int) {
 	js.mu.Lock()
@@ -556,8 +561,8 @@ func TestKilled(t *testing.T) {
 	rn.DeleteServer("server99")
 
 	select {
-	case x := <-doneCh:
-		if x != false {
+	case done := <-doneCh:
+		if done {
 			t.Fatalf("Handler3 returned successfully despite DeleteServer()")
 		}
 	case <-time.After(100 * time.Millisecond):
