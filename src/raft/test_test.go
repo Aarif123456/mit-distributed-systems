@@ -9,7 +9,7 @@ package raft
 //
 
 import (
-	"fmt"
+	"log"
 	"math/rand"
 	"sync"
 	"sync/atomic"
@@ -27,7 +27,7 @@ const (
 func TestInitialElection2A(t *testing.T) {
 	servers := 3
 	cfg := makeConfig(t, servers, false, false)
-	defer cfg.cleanup()
+	t.Cleanup(cfg.cleanup)
 
 	cfg.begin("Test (2A): initial election")
 
@@ -46,7 +46,7 @@ func TestInitialElection2A(t *testing.T) {
 	time.Sleep(2 * RaftElectionTimeout)
 
 	if term2 := cfg.checkTerms(); term1 != term2 {
-		fmt.Println("warning: term changed even though there were no failures")
+		log.Println("warning: term changed even though there were no failures")
 	}
 
 	// there should still be a leader.
@@ -58,38 +58,38 @@ func TestInitialElection2A(t *testing.T) {
 func TestReElection2A(t *testing.T) {
 	servers := 3
 	cfg := makeConfig(t, servers, false, false)
-	defer cfg.cleanup()
+	t.Cleanup(cfg.cleanup)
 
 	cfg.begin("Test (2A): election after network failure")
 	leader1 := cfg.checkOneLeader()
 
 	// if the leader disconnects, a new one should be elected.
+	log.Println("Disconnect leader")
 	cfg.disconnect(leader1)
-	fmt.Println("Disconnect leader")
 	cfg.checkOneLeader()
 
 	// if the old leader rejoins, that shouldn't
 	// disturb the new leader.
+	log.Println("Old leader joins")
 	cfg.connect(leader1)
-	fmt.Println("Old leader joins")
 	leader2 := cfg.checkOneLeader()
 
 	// if there's no quorum, no leader should
 	// be elected.
+	log.Println("No quorum means no leader")
 	cfg.disconnect(leader2)
 	cfg.disconnect((leader2 + 1) % servers)
 	time.Sleep(2 * RaftElectionTimeout)
-	fmt.Println("No quorum means no leader")
 	cfg.checkNoLeader()
 
 	// if a quorum arises, it should elect a leader.
+	log.Println("Quorum arises means one leader")
 	cfg.connect((leader2 + 1) % servers)
-	fmt.Println("Quorum arises means one leader")
 	cfg.checkOneLeader()
 
 	// re-join of last node shouldn't prevent leader from existing.
+	log.Println("Rejoin final node")
 	cfg.connect(leader2)
-	fmt.Println("Rejoin final node")
 	cfg.checkOneLeader()
 
 	cfg.end()
@@ -98,7 +98,7 @@ func TestReElection2A(t *testing.T) {
 func TestManyElections2A(t *testing.T) {
 	servers := 7
 	cfg := makeConfig(t, servers, false, false)
-	defer cfg.cleanup()
+	t.Cleanup(cfg.cleanup)
 
 	cfg.begin("Test (2A): multiple elections")
 
@@ -131,7 +131,7 @@ func TestManyElections2A(t *testing.T) {
 func TestBasicAgree2B(t *testing.T) {
 	servers := 3
 	cfg := makeConfig(t, servers, false, false)
-	defer cfg.cleanup()
+	t.Cleanup(cfg.cleanup)
 
 	cfg.begin("Test (2B): basic agreement")
 
@@ -158,7 +158,7 @@ func TestBasicAgree2B(t *testing.T) {
 func TestRPCBytes2B(t *testing.T) {
 	servers := 3
 	cfg := makeConfig(t, servers, false, false)
-	defer cfg.cleanup()
+	t.Cleanup(cfg.cleanup)
 
 	cfg.begin("Test (2B): RPC byte count")
 
@@ -188,7 +188,7 @@ func TestRPCBytes2B(t *testing.T) {
 func TestFailAgree2B(t *testing.T) {
 	servers := 3
 	cfg := makeConfig(t, servers, false, false)
-	defer cfg.cleanup()
+	t.Cleanup(cfg.cleanup)
 
 	cfg.begin("Test (2B): agreement despite follower disconnection")
 
@@ -222,7 +222,7 @@ func TestFailAgree2B(t *testing.T) {
 func TestFailNoAgree2B(t *testing.T) {
 	servers := 5
 	cfg := makeConfig(t, servers, false, false)
-	defer cfg.cleanup()
+	t.Cleanup(cfg.cleanup)
 
 	cfg.begin("Test (2B): no agreement if too many followers disconnect")
 
@@ -272,7 +272,7 @@ func TestFailNoAgree2B(t *testing.T) {
 func TestConcurrentStarts2B(t *testing.T) {
 	servers := 3
 	cfg := makeConfig(t, servers, false, false)
-	defer cfg.cleanup()
+	t.Cleanup(cfg.cleanup)
 
 	cfg.begin("Test (2B): concurrent Start()s")
 
@@ -373,7 +373,7 @@ loop:
 func TestRejoin2B(t *testing.T) {
 	servers := 3
 	cfg := makeConfig(t, servers, false, false)
-	defer cfg.cleanup()
+	t.Cleanup(cfg.cleanup)
 
 	cfg.begin("Test (2B): rejoin of partitioned leader")
 
@@ -411,7 +411,7 @@ func TestRejoin2B(t *testing.T) {
 func TestBackup2B(t *testing.T) {
 	servers := 5
 	cfg := makeConfig(t, servers, false, false)
-	defer cfg.cleanup()
+	t.Cleanup(cfg.cleanup)
 
 	cfg.begin("Test (2B): leader backs up quickly over incorrect follower logs")
 
@@ -483,7 +483,7 @@ func TestBackup2B(t *testing.T) {
 func TestCount2B(t *testing.T) {
 	servers := 3
 	cfg := makeConfig(t, servers, false, false)
-	defer cfg.cleanup()
+	t.Cleanup(cfg.cleanup)
 
 	cfg.begin("Test (2B): RPC counts aren't too high")
 
@@ -595,7 +595,7 @@ loop:
 func TestPersist12C(t *testing.T) {
 	servers := 3
 	cfg := makeConfig(t, servers, false, false)
-	defer cfg.cleanup()
+	t.Cleanup(cfg.cleanup)
 
 	cfg.begin("Test (2C): basic persistence")
 
@@ -641,7 +641,7 @@ func TestPersist12C(t *testing.T) {
 func TestPersist22C(t *testing.T) {
 	servers := 5
 	cfg := makeConfig(t, servers, false, false)
-	defer cfg.cleanup()
+	t.Cleanup(cfg.cleanup)
 
 	cfg.begin("Test (2C): more persistence")
 
@@ -687,7 +687,7 @@ func TestPersist22C(t *testing.T) {
 func TestPersist32C(t *testing.T) {
 	servers := 3
 	cfg := makeConfig(t, servers, false, false)
-	defer cfg.cleanup()
+	t.Cleanup(cfg.cleanup)
 
 	cfg.begin("Test (2C): partitioned leader and one follower crash, leader restarts")
 
@@ -727,7 +727,7 @@ func TestPersist32C(t *testing.T) {
 func TestFigure82C(t *testing.T) {
 	servers := 5
 	cfg := makeConfig(t, servers, false, false)
-	defer cfg.cleanup()
+	t.Cleanup(cfg.cleanup)
 
 	cfg.begin("Test (2C): Figure 8")
 
@@ -783,7 +783,7 @@ func TestFigure82C(t *testing.T) {
 func TestUnreliableAgree2C(t *testing.T) {
 	servers := 5
 	cfg := makeConfig(t, servers, true, false)
-	defer cfg.cleanup()
+	t.Cleanup(cfg.cleanup)
 
 	cfg.begin("Test (2C): unreliable agreement")
 
@@ -812,7 +812,7 @@ func TestUnreliableAgree2C(t *testing.T) {
 func TestFigure8Unreliable2C(t *testing.T) {
 	servers := 5
 	cfg := makeConfig(t, servers, true, false)
-	defer cfg.cleanup()
+	t.Cleanup(cfg.cleanup)
 
 	cfg.begin("Test (2C): Figure 8 (unreliable)")
 
@@ -865,9 +865,11 @@ func TestFigure8Unreliable2C(t *testing.T) {
 }
 
 func internalChurn(t *testing.T, unreliable bool) {
+	t.Helper()
+
 	servers := 5
 	cfg := makeConfig(t, servers, unreliable, false)
-	defer cfg.cleanup()
+	t.Cleanup(cfg.cleanup)
 
 	if unreliable {
 		cfg.begin("Test (2C): unreliable churn")
@@ -1026,7 +1028,7 @@ func snapcommon(t *testing.T, name string, disconnect, reliable, crash bool) {
 	iters := 30
 	servers := 3
 	cfg := makeConfig(t, servers, !reliable, true)
-	defer cfg.cleanup()
+	t.Cleanup(cfg.cleanup)
 
 	cfg.begin(name)
 

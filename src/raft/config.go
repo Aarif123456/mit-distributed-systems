@@ -25,6 +25,8 @@ import (
 	"6.824/labrpc"
 )
 
+const SnapShotInterval = 10
+
 var _ncpuOnce sync.Once
 
 type config struct {
@@ -164,15 +166,13 @@ func (cfg *config) applier(i int, applyCh <-chan ApplyMsg) {
 			errMsg = fmt.Sprintf("server %v apply out of order %v", i, m.CommandIndex)
 		}
 		if errMsg != "" {
-			log.Fatalf("apply error: %v\n", errMsg)
 			cfg.applyErr[i] = errMsg
+			log.Fatalf("apply error: %v\n", errMsg)
 			// keep reading after error so that Raft doesn't block
 			// holding locks...
 		}
 	}
 }
-
-const SnapShotInterval = 10
 
 // periodically snapshot raft state
 func (cfg *config) applierSnap(i int, applyCh <-chan ApplyMsg) {
@@ -430,16 +430,14 @@ func (cfg *config) checkNoLeader() {
 		if cfg.connected[i] {
 			_, isLeader := cfg.rafts[i].GetState()
 			if isLeader {
-				cfg.t.Fatalf("expected no leader, but %v claims to be leader", i)
+				panic(fmt.Sprintf("expected no leader, but (%v, %v) claims to be leader for term %d", i, cfg.rafts[i].me, cfg.rafts[i].term.Num()))
 			}
 		}
 	}
 }
 
 // how many servers think a log entry is committed?
-func (cfg *config) nCommitted(index int) (int, any) {
-	count := 0
-	var cmd any
+func (cfg *config) nCommitted(index int) (count int, cmd any) {
 	for i := 0; i < len(cfg.rafts); i++ {
 		if cfg.applyErr[i] != "" {
 			cfg.t.Fatal(cfg.applyErr[i])
