@@ -20,7 +20,6 @@ package raft
 //
 
 import (
-	"log"
 	"math/rand"
 	"sync/atomic"
 	"time"
@@ -51,8 +50,6 @@ type (
 		term     *Term
 		logs     *Logs
 	}
-
-	empty struct{}
 
 	// as each Raft peer becomes aware that successive log entries are
 	// committed, the peer should send an ApplyMsg to the service (or
@@ -216,28 +213,21 @@ type (
 
 // RequestVote RPC handler.
 func (rf *Raft) RequestVote(args *RequestVoteArgs, reply *RequestVoteReply) {
-
 	// If our term is out of date we have to update regardless of our vote
 	reply.Term = rf.term.UpdatedNum(args.Term)
 
-	// log.Printf("%d asked %d to vote for them!\n", args.RequesterID, rf.me)
-
 	if !rf.logs.AreLogUpToDate(args.LastLogIndex, args.LastLogTerm) {
 		// Log must be up to date to receive our vote
-		log.Printf("%d tried to vote for %d, but logs were out of date\n", rf.me, args.RequesterID)
 		return
 	}
 
 	if voted := rf.term.VoteFor(args.Term, &args.RequesterID); voted {
-		log.Printf("%d granted %d's vote request for term %d\n", rf.me, args.RequesterID, reply.Term)
-
 		reply.VoteGranted = true
 		rf.resetTimeout()
 	}
 }
 
 func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply) {
-	// log.Printf("%d asked for a heartbeat from %d\n", args.LeaderID, rf.me)
 	curTermNum := rf.term.Num()
 
 	reply.Term = rf.term.UpdatedNum(args.Term)
@@ -249,7 +239,6 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 
 	if !rf.logs.IsLogExactMatch(args.PrevLogIndex, args.PrevLogTerm) {
 		// Log must be an exact match or we can't update
-		log.Printf("%d tried to get heartbeat from %d, but logs did not match\n", args.LeaderID, rf.me)
 		return
 	}
 
@@ -265,15 +254,12 @@ func (rf *Raft) AppendEntries(args *AppendEntriesArgs, reply *AppendEntriesReply
 
 	rf.resetTimeout()
 	reply.Success = true
-	// log.Printf("%d asked for a heartbeat from %d\n", args.LeaderID, rf.me)
-
 	// TODO: persist applied logs
 	// TODO: handle committing the logs by sending message to channel
 }
 
 func (rf *Raft) resetTimeout() {
 	atomic.StoreInt32(&rf.wasReset, 1)
-	// log.Printf("%d was reset!\n", rf.me)
 }
 
 func (rf *Raft) isTermValid() bool {
@@ -339,8 +325,6 @@ func (rf *Raft) ticker() {
 			continue
 		}
 
-		// log.Printf("%d for election timeout %v\n", rf.me, electionTimeout)
-
 		if rf.isTermValid() || rf.term.Num() != termToCheck {
 			// if term was valid or if it was changed, we don't use the reset
 			continue
@@ -358,8 +342,6 @@ func (rf *Raft) becomeCandidate(termToBeLeader int) {
 
 	rf.resetTimeout()
 	curLogIndex, curLogTerm := rf.logs.LastAppliedInfo()
-
-	log.Printf("%d is trying to become a leader for term %d\n", rf.me, termToBeLeader)
 
 	var (
 		gotVotes      int64 = 1
@@ -382,26 +364,20 @@ func (rf *Raft) becomeCandidate(termToBeLeader int) {
 			reply := &RequestVoteReply{}
 
 			if ok := rf.peers.SendRequestVote(i, args, reply); !ok {
-				log.Printf("%d got no result from %d\n", rf.me, i)
 				return
 			}
 
 			if reply.Term > termToBeLeader {
 				rf.term.UpdatedNum(reply.Term)
-				log.Printf("%d's term is outdated\n", rf.me)
 				return
 			}
 
 			if reply.VoteGranted {
-				log.Printf("%d got a vote from %d!\n", rf.me, i)
 				atomic.AddInt64(&gotVotes, 1)
 			}
 
 			if atomic.LoadInt64(&gotVotes) >= requiredVotes {
-				log.Printf("got:%d required:%d, term %d\n", atomic.LoadInt64(&gotVotes), requiredVotes, termToBeLeader)
-				if rf.term.BecomeLeader(rf.me, rf.peers, termToBeLeader, rf.logs) {
-					log.Printf("%d became leader of term %d\n", rf.me, termToBeLeader)
-				}
+				rf.term.BecomeLeader(rf.me, rf.peers, termToBeLeader, rf.logs)
 			}
 		}(i)
 	}

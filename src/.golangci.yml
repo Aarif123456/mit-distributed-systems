@@ -159,6 +159,10 @@ linters-settings:
         disabled: true
       - name: unexported-return # too restrictive
         disabled: true
+      - name: confusing-naming # too restrictive
+        disabled: true
+      - name: unused-parameter
+        disabled: true
       - name: unhandled-error
         arguments:
           - "fmt.Printf"
